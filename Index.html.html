@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0e14">
+<title>THE BUILD</title>
+<style>
+:root{
+  --bg:#0a0e14;--panel:#111721;--panel2:#0d1219;--line:#1e2836;
+  --ink:#e8edf4;--dim:#7d8ba0;--dimmer:#4a5568;
+  --blue:#3d7fff;--blueglow:rgba(61,127,255,.18);
+  --amber:#f5a623;--green:#2ecc71;--gold:#e6b325;--purple:#9b6dff;--red:#e74c3c;
+  --mono:'SF Mono',ui-monospace,'Roboto Mono',Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--ink);font-family:var(--sans);overscroll-behavior:none}
+body{max-width:520px;margin:0 auto;min-height:100vh;padding-bottom:20px;position:relative}
+.grid-bg{position:fixed;inset:0;max-width:520px;margin:0 auto;pointer-events:none;z-index:0;opacity:.28;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:30px 30px;mask-image:linear-gradient(180deg,transparent,#000 35%,#000 65%,transparent)}
+.wrap{position:relative;z-index:1}
+
+header{padding:14px 16px 8px;position:sticky;top:0;background:linear-gradient(180deg,var(--bg) 72%,transparent);z-index:20}
+.htop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.brand{font-family:var(--mono);font-size:10px;letter-spacing:3px;color:var(--dim);font-weight:600}
+.brand b{color:var(--ink);display:block;font-size:18px;letter-spacing:1px;margin-top:2px}
+.brand b span{color:var(--blue)}
+.streakchip{font-family:var(--mono);font-size:9px;color:var(--dim);text-align:right;line-height:1.5}
+.streakchip .n{color:var(--amber);font-size:16px;font-weight:800;display:block}
+.rank{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:11px 14px;position:relative;overflow:hidden}
+.rank::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--blue)}
+.rtop{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.rtitle{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--dim)}
+.rname{font-size:15px;font-weight:800}
+.rright{display:flex;align-items:center;gap:8px}
+.multbadge{display:none;font-family:var(--mono);font-size:9px;font-weight:800;color:var(--gold);background:rgba(230,179,37,.14);border:1px solid rgba(230,179,37,.3);padding:2px 7px;border-radius:6px}
+.rlvl{font-family:var(--mono);font-size:12px;color:var(--blue);font-weight:800}
+.xpbar{height:6px;background:var(--panel2);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.xpbar>div{height:100%;background:linear-gradient(90deg,var(--blue),#6fa8ff);border-radius:4px;transition:width .6s;box-shadow:0 0 10px var(--blueglow)}
+.xpmeta{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:var(--dimmer);margin-top:4px}
+
+.tabs{display:flex;gap:6px;padding:10px 14px 4px;position:sticky;top:0;z-index:15}
+.tab{flex:1;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:9px 4px;color:var(--dim);background:var(--panel2);border:1px solid var(--line);border-radius:9px;font-weight:700;cursor:pointer;transition:.2s}
+.tab.on{color:var(--ink);background:var(--panel);border-color:var(--blue);box-shadow:0 0 0 1px var(--blue) inset}
+.tab .ic{display:block;font-size:14px;margin-bottom:3px}
+section{padding:8px 16px 24px;display:none;animation:fade .3s}
+section.on{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* day dots */
+.daydots{display:flex;align-items:center;justify-content:center;gap:6px;margin:14px 0 4px}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--panel2);border:1.5px solid var(--line)}
+.dot.done{background:var(--green);border-color:var(--green)}
+.dot.cur{background:var(--blue);border-color:var(--blue);box-shadow:0 0 8px var(--blueglow)}
+
+/* HUB quest card */
+.mission-lab{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--blue);text-align:center;margin:12px 0 8px}
+.hub-quest{background:linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:20px 18px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.4);cursor:pointer;position:relative;overflow:hidden}
+.hub-quest::before{content:'';position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--blue),var(--amber))}
+.hq-top{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;justify-content:center}
+.qtier{font-family:var(--mono);font-size:8.5px;letter-spacing:1px;padding:3px 8px;border-radius:6px;font-weight:800;background:rgba(61,127,255,.14);color:var(--blue)}
+.qtype{font-family:var(--mono);font-size:8.5px;letter-spacing:1px;padding:3px 8px;border-radius:6px;font-weight:800}
+.qtype.lesson{background:rgba(155,109,255,.15);color:var(--purple)}
+.qtype.action{background:rgba(245,166,35,.15);color:var(--amber)}
+.qxp{font-family:var(--mono);font-size:12px;color:var(--gold);font-weight:800}
+.hq-ic{font-size:48px;margin-bottom:10px}
+.hq-title{font-size:22px;font-weight:800;line-height:1.2;margin-bottom:8px}
+.hq-sub{font-size:12px;color:var(--dim);margin-bottom:18px}
+.start-btn{width:100%;background:var(--blue);border:none;border-radius:13px;color:#fff;font-weight:800;font-size:15px;padding:15px;cursor:pointer;box-shadow:0 6px 20px var(--blueglow)}
+
+/* review card */
+.review-card{background:linear-gradient(160deg,rgba(155,109,255,.1),var(--panel));border:1px solid var(--purple);border-radius:16px;padding:16px;margin-bottom:12px;cursor:pointer}
+.rc-lab{font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--purple);margin-bottom:6px;font-weight:700}
+.rc-t{font-size:16px;font-weight:800;margin-bottom:4px}
+.rc-d{font-size:11.5px;color:var(--dim);line-height:1.5}
+
+.daydone{text-align:center;font-family:var(--mono);font-size:11px;color:var(--green);margin-top:14px;padding:10px;border:1px solid rgba(46,204,113,.25);border-radius:10px;background:rgba(46,204,113,.05)}
+.locked-teaser{margin-top:12px;font-size:11px;color:var(--dim);background:var(--panel2);border:1px dashed var(--line);border-radius:10px;padding:11px 13px;line-height:1.4}
+.locked-teaser b{color:var(--dimmer)}
+
+/* LESSON view */
+.lesson-top{display:flex;align-items:center;justify-content:space-between;margin:12px 0 12px}
+.lt-title{font-size:14px;font-weight:800}
+.lt-x{font-size:18px;color:var(--dim);cursor:pointer;padding:4px 8px}
+.progress-track{display:flex;gap:4px;margin-bottom:16px}
+.pt{flex:1;height:4px;background:var(--panel2);border-radius:3px;transition:.3s}
+.pt.on{background:var(--blue)}
+.pt.testpt{max-width:40px;background:var(--panel2);border:1px solid rgba(245,166,35,.3)}
+
+.lesson-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 18px;min-height:280px}
+.card-kind{font-family:var(--mono);font-size:9px;letter-spacing:2px;font-weight:700;margin-bottom:12px;display:inline-block;padding:3px 8px;border-radius:6px}
+.card-kind.learn{color:var(--purple);background:rgba(155,109,255,.12)}
+.card-kind.do{color:var(--amber);background:rgba(245,166,35,.12)}
+.card-kind.pro{color:var(--green);background:rgba(46,204,113,.12)}
+.card-h{font-size:20px;font-weight:800;line-height:1.25;margin-bottom:12px}
+.card-b{font-size:15px;line-height:1.65;color:var(--ink)}
+.pro-item{font-size:14px;line-height:1.55;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--green);border-radius:9px;padding:11px 13px;margin-bottom:9px}
+
+.lesson-nav{display:flex;gap:10px;margin-top:14px}
+.ln-back{background:transparent;border:1px solid var(--line);border-radius:12px;color:var(--dim);font-weight:700;padding:14px 18px;cursor:pointer;font-family:var(--sans);font-size:13px}
+.ln-next{flex:1;background:var(--blue);border:none;border-radius:12px;color:#fff;font-weight:800;font-size:15px;padding:14px;cursor:pointer;box-shadow:0 4px 16px var(--blueglow)}
+.ln-next.full{width:100%;margin-top:14px}
+
+/* TEST */
+.test-prog{font-family:var(--mono);font-size:10px;color:var(--dim);text-align:center;margin-bottom:14px;letter-spacing:1px}
+.q-block{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 18px}
+.q-text{font-size:17px;font-weight:700;line-height:1.4;margin-bottom:18px}
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{background:var(--panel2);border:1.5px solid var(--line);border-radius:12px;padding:14px 15px;font-size:14px;cursor:pointer;transition:.15s;font-weight:600}
+.opt:active{transform:scale(.99)}
+.opt.correct{background:rgba(46,204,113,.15);border-color:var(--green);color:var(--green);animation:pop .3s}
+.opt.wrong{background:rgba(231,76,60,.15);border-color:var(--red);color:var(--red);animation:shake .3s}
+.opt.dim{opacity:.4}
+@keyframes pop{0%{transform:scale(.96)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.text-answer{display:flex;gap:8px}
+.text-answer input{flex:1;background:var(--panel2);border:1.5px solid var(--line);border-radius:12px;padding:14px;color:var(--ink);font-family:var(--mono);font-size:16px;min-width:0}
+.text-answer input:focus{outline:none;border-color:var(--blue)}
+.text-answer button{background:var(--blue);border:none;border-radius:12px;color:#fff;font-weight:800;padding:0 20px;cursor:pointer;font-family:var(--mono)}
+.feedback{border-radius:12px;padding:14px;margin-top:16px}
+.feedback.good{background:rgba(46,204,113,.1);border:1px solid var(--green)}
+.feedback.bad{background:rgba(231,76,60,.08);border:1px solid var(--red)}
+.fb-head{font-family:var(--mono);font-size:12px;font-weight:800;letter-spacing:1px;margin-bottom:6px}
+.feedback.good .fb-head{color:var(--green)}
+.feedback.bad .fb-head{color:var(--red)}
+.fb-ans{font-size:13px;margin-bottom:6px}
+.fb-why{font-size:12.5px;color:var(--dim);line-height:1.5}
+
+/* ACTION */
+.action-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px 18px}
+.action-note{font-size:11.5px;color:var(--dim);line-height:1.5;margin:16px 0;padding:12px;background:var(--panel2);border-radius:10px;border-left:3px solid var(--amber)}
+.complete-btn{width:100%;background:var(--green);border:none;border-radius:13px;color:#04140a;font-weight:800;font-size:15px;padding:16px;cursor:pointer;box-shadow:0 6px 20px rgba(46,204,113,.25)}
+.skip-btn{width:100%;background:transparent;border:1px solid var(--line);border-radius:12px;color:var(--dim);font-family:var(--mono);font-size:10px;letter-spacing:1px;padding:11px;margin-top:8px;cursor:pointer;font-weight:600}
+
+/* SUMMARY */
+.summary{text-align:center;padding:20px 10px}
+.sum-em{font-size:52px;margin-bottom:10px;animation:pop .4s}
+.sum-big{font-size:22px;font-weight:900;letter-spacing:1px;color:var(--green);margin-bottom:6px}
+.sum-title{font-size:14px;color:var(--dim);margin-bottom:20px}
+.sum-stats{display:flex;justify-content:center;gap:24px;margin-bottom:18px}
+.ss{text-align:center}
+.ss-n{font-size:26px;font-weight:900;font-family:var(--mono)}
+.ss-l{font-size:9px;color:var(--dimmer);font-family:var(--mono);letter-spacing:1px;margin-top:2px}
+.sum-note{font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:14px;padding:0 10px}
+.sum-streak{font-family:var(--mono);color:var(--amber);font-weight:800;font-size:15px;margin-bottom:16px}
+.sum-send{font-size:12px;color:var(--dim);line-height:1.5;margin-top:14px;padding:12px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.25);border-radius:10px}
+.sum-send b{color:var(--amber)}
+
+.cleared{text-align:center;padding:26px 14px}
+.cleared .em{font-size:44px;margin-bottom:12px}
+.cleared .big{font-size:22px;font-weight:900;color:var(--green);letter-spacing:1px;margin-bottom:8px}
+.cleared .sub{font-size:13px;color:var(--dim);line-height:1.6;margin-bottom:10px}
+.cleared .bonus{display:inline-block;font-family:var(--mono);font-size:11px;color:var(--gold);border:1px solid rgba(230,179,37,.3);border-radius:8px;padding:8px 14px}
+
+/* PATH */
+.sec-head{display:flex;align-items:center;gap:8px;margin:14px 0 10px}
+.sec-head .bar{width:20px;height:2px;background:var(--blue)}
+.sec-head h2{font-family:var(--mono);font-size:11px;letter-spacing:2px;color:var(--dim);font-weight:700}
+.path-intro{font-size:12px;color:var(--dim);line-height:1.55;margin:12px 0 16px}
+.mastery-wrap{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px}
+.mastery-h{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--gold);margin-bottom:12px}
+.mastery-row{display:flex;align-items:center;gap:10px;margin-bottom:9px}
+.mr-nm{font-size:11px;width:90px;flex-shrink:0;color:var(--ink)}
+.mr-bar{flex:1;height:7px;background:var(--panel2);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.mr-bar>div{height:100%;background:linear-gradient(90deg,var(--gold),#ffd966);border-radius:4px;transition:width .6s}
+.mr-pct{font-family:var(--mono);font-size:10px;color:var(--dim);width:34px;text-align:right}
+
+.tier-block{margin-bottom:18px}
+.tier-block.locked{opacity:.55}
+.tier-hd{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.tier-ic{width:40px;height:40px;border-radius:11px;background:var(--panel2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.tier-info{flex:1;min-width:0}
+.tier-nm{font-size:15px;font-weight:800}
+.tier-st{font-family:var(--mono);font-size:9px;letter-spacing:1px;margin-top:2px}
+.tier-st.locked{color:var(--dimmer)}.tier-st.active{color:var(--blue)}.tier-st.done{color:var(--green)}
+.tier-lock{font-size:14px;opacity:.6}
+.tier-blurb,.tier-teaser{font-size:11.5px;color:var(--dim);line-height:1.5;margin-bottom:8px}
+.tier-teaser{padding:10px;background:var(--panel2);border:1px dashed var(--line);border-radius:9px}
+.tier-prog{height:6px;background:var(--panel2);border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:6px}
+.tier-prog>div{height:100%;border-radius:4px;transition:width .5s}
+.tier-progmeta{font-family:var(--mono);font-size:9px;color:var(--dimmer);display:flex;justify-content:space-between;margin-bottom:6px}
+.lesson-mini{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--panel2);border:1px solid var(--line);margin-top:6px;font-size:11.5px}
+.lesson-mini .lm-dot{width:16px;height:16px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;border:1.5px solid var(--dimmer)}
+.lesson-mini.done .lm-dot{background:var(--green);border-color:var(--green);color:#04140a;font-weight:900}
+.lesson-mini.cur .lm-dot{border-color:var(--blue);background:var(--blue)}
+.lesson-mini .lm-nm{flex:1;color:var(--ink)}
+.lesson-mini.done .lm-nm{color:var(--dim)}
+.lesson-mini .lm-xp{font-family:var(--mono);font-size:9px;color:var(--gold)}
+.lesson-mini.locked{opacity:.5}
+
+/* KEYS */
+.keys-streak{background:linear-gradient(160deg,rgba(245,166,35,.08),var(--panel));border:1px solid var(--line);border-left:3px solid var(--amber);border-radius:14px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.ks-lab{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--amber);margin-bottom:4px}
+.ks-n{font-size:32px;font-weight:900;font-family:var(--mono);line-height:1}
+.ks-sub{font-size:10px;color:var(--dimmer);margin-top:2px}
+.ks-ring{width:56px;height:56px;border-radius:50%;border:3px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-weight:800;font-size:14px;color:var(--dim);transition:.4s}
+.ks-ring.full{border-color:var(--green);color:var(--green);box-shadow:0 0 16px rgba(46,204,113,.25)}
+.keys-mult{font-size:11px;color:var(--gold);text-align:center;margin-bottom:12px;font-family:var(--mono)}
+.kitem{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--line);border-radius:12px;margin-bottom:10px;display:flex;align-items:stretch;cursor:pointer;overflow:hidden;transition:.2s}
+.kitem.done{opacity:.6;border-left-color:var(--green)}
+.kitem .kc{width:50px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--panel2);border-right:1px solid var(--line)}
+.kitem .kbox{width:24px;height:24px;border:2px solid var(--dimmer);border-radius:7px;transition:.2s;display:flex;align-items:center;justify-content:center}
+.kitem.done .kbox{background:var(--green);border-color:var(--green)}
+.kitem.done .kbox::after{content:'✓';color:#04140a;font-weight:900;font-size:15px}
+.kitem.done .kc{background:rgba(46,204,113,.08)}
+.kbody{flex:1;padding:12px 13px;min-width:0}
+.ktop{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.kemoji{font-size:16px}.ktitle{font-size:14px;font-weight:700}
+.kbadge{font-family:var(--mono);font-size:8px;letter-spacing:1px;padding:2px 6px;border-radius:5px;background:rgba(155,109,255,.15);color:var(--purple);font-weight:700}
+.kdesc{font-size:11px;color:var(--dim);line-height:1.4}
+.keys-done{background:linear-gradient(135deg,rgba(46,204,113,.1),transparent);border:1px solid var(--green);border-radius:12px;padding:16px;text-align:center;margin-top:6px;display:none}
+.keys-done.show{display:block;animation:fade .4s}
+.kd-big{font-size:15px;font-weight:800;color:var(--green);margin-bottom:4px;letter-spacing:1px}
+.kd-sub{font-size:11.5px;color:var(--dim);line-height:1.5}
+
+/* LOG */
+.license-card{background:linear-gradient(160deg,rgba(230,179,37,.08),var(--panel));border:1px solid var(--gold);border-radius:14px;padding:16px;margin-bottom:14px;text-align:center}
+.license-card .lab{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--gold);margin-bottom:8px}
+.license-card .huge{font-size:34px;font-weight:900;font-family:var(--mono);line-height:1}
+.license-card .of{font-size:11px;color:var(--dim);margin-top:4px}
+.license-card .countdown{font-family:var(--mono);font-size:13px;color:var(--gold);font-weight:800;margin-top:10px}
+.license-card .lbar{height:8px;background:var(--panel2);border:1px solid var(--line);border-radius:5px;overflow:hidden;margin-top:12px}
+.license-card .lbar>div{height:100%;background:linear-gradient(90deg,var(--gold),#ffd966);border-radius:5px;transition:width .6s}
+.license-note{font-size:10px;color:var(--dimmer);line-height:1.5;margin-top:10px}
+.logrow{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:9px}
+.lr-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+.lr-nm{font-size:13px;font-weight:700}.lr-cur{font-family:var(--mono);font-size:10px;color:var(--dim)}.lr-cur b{color:var(--green)}
+.lr-hint{font-size:10.5px;color:var(--dim);line-height:1.4;margin-bottom:9px}
+.log-in{display:flex;gap:8px}
+.log-in input{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--ink);font-family:var(--mono);font-size:14px;min-width:0}
+.log-in input:focus{outline:none;border-color:var(--blue)}
+.log-in button{background:var(--blue);border:none;border-radius:8px;color:#fff;font-weight:700;padding:0 15px;font-size:13px;cursor:pointer;font-family:var(--mono)}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:12px}
+.stat .lab{font-family:var(--mono);font-size:9px;letter-spacing:1px;color:var(--dim);margin-bottom:5px}
+.stat .val{font-size:20px;font-weight:800;font-family:var(--mono)}
+.stat .sub{font-size:9.5px;color:var(--dimmer);margin-top:2px}
+.warn-banner{background:rgba(231,76,60,.06);border:1px solid rgba(231,76,60,.25);border-radius:10px;padding:11px 13px;margin:12px 0;font-size:10.5px;color:var(--dim);line-height:1.5}
+.warn-banner b{color:var(--red)}
+.ghost-btn{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;color:var(--dim);font-family:var(--mono);font-size:10px;letter-spacing:1px;cursor:pointer;margin-top:8px;font-weight:600}
+.danger{color:var(--red);border-color:rgba(231,76,60,.3)}
+.tiny{font-family:var(--mono);font-size:9px;color:var(--dimmer);text-align:center;padding:14px 20px;line-height:1.7}
+
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(30px);background:var(--panel);border:1px solid var(--blue);border-radius:11px;padding:12px 18px;font-size:13px;font-weight:600;z-index:100;opacity:0;transition:.3s;max-width:90%;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,.5);pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast .xp{color:var(--gold);font-family:var(--mono)}
+#lvlup{position:fixed;inset:0;background:rgba(5,8,13,.94);z-index:200;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+#lvlup.show{display:flex;animation:fade .3s}
+.lu-box{text-align:center;padding:30px}
+.lu-flash{font-family:var(--mono);font-size:12px;letter-spacing:4px;color:var(--blue);margin-bottom:10px}
+.lu-num{font-size:72px;font-weight:900;font-family:var(--mono);text-shadow:0 0 40px var(--blueglow)}
+.lu-rank{font-size:18px;font-weight:800;margin-top:8px;color:var(--blue)}
+.lu-unlock{font-size:12px;color:var(--gold);margin-top:12px;font-family:var(--mono)}
+.lu-tap{font-size:11px;color:var(--dim);margin-top:22px;font-family:var(--mono)}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="wrap">
+<header>
+  <div class="htop">
+    <div class="brand">MASTER THE TRADE<b>THE <span>BUILD</span></b></div>
+    <div class="streakchip"><span class="n" id="streakN">0</span>DAY STREAK</div>
+  </div>
+  <div class="rank">
+    <div class="rtop">
+      <div><div class="rtitle">CURRENT RANK</div><div class="rname" id="rankName">Apprentice</div></div>
+      <div class="rright"><span class="multbadge" id="multBadge">1.5× XP</span><span class="rlvl" id="rankLvl">LVL 1</span></div>
+    </div>
+    <div class="xpbar"><div id="xpFill" style="width:0%"></div></div>
+    <div class="xpmeta"><span id="xpNow">0 XP</span><span id="xpNext">/ 100</span></div>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab on" data-t="quest"><span class="ic">◈</span>LEARN</div>
+  <div class="tab" data-t="path"><span class="ic">⋔</span>PATH</div>
+  <div class="tab" data-t="keys"><span class="ic">◆</span>DAILY</div>
+  <div class="tab" data-t="log"><span class="ic">▤</span>LOG</div>
+</div>
+
+<section class="on" id="quest">
+  <div class="daydots" id="dayDots"></div>
+  <div id="stage"></div>
+</section>
+
+<section id="path">
+  <div class="sec-head"><div class="bar"></div><h2>THE ROAD TO DEVELOPER</h2></div>
+  <div class="path-intro"><b style="color:var(--ink)">Carpenter → Foreman → Licensed GC → Developer.</b> Each mission is gated: you unlock the next only by <b style="color:var(--ink)">passing the test</b> on the ones it builds from. Mastery is earned, not tapped.</div>
+  <div id="pathList"></div>
+</section>
+
+<section id="keys">
+  <div class="sec-head"><div class="bar"></div><h2>DAILY KEYSTONES</h2></div>
+  <p class="path-intro">Your foundation — and it now <b style="color:var(--ink)">feeds the game</b>: clear all 5 and earn <b style="color:var(--gold)">1.5× XP</b> on the career track today.</p>
+  <div class="keys-streak">
+    <div><div class="ks-lab">KEYSTONE STREAK</div><div class="ks-n" id="keysStreakN">0</div><div class="ks-sub">days all-cleared</div></div>
+    <div class="ks-ring" id="keysRing">0/5</div>
+  </div>
+  <div class="keys-mult" id="keysMult">Hit all 5 for 1.5× career XP</div>
+  <div id="keysList"></div>
+  <div class="keys-done" id="keysDone"><div class="kd-big">◆ FOUNDATION HELD ◆</div><div class="kd-sub" id="keysDoneSub"></div></div>
+</section>
+
+<section id="log">
+  <div class="sec-head"><div class="bar"></div><h2>THE ONE NUMBER THAT MATTERS</h2></div>
+  <div class="license-card">
+    <div class="lab">⏱ DOCUMENTED W-2 HOURS → FL GC LICENSE</div>
+    <div class="huge" id="licHours">0</div>
+    <div class="of">of ~8,320 hrs (≈4 yrs) — verify current requirement at myfloridalicense.com</div>
+    <div class="countdown" id="licCountdown">8,320 hrs to go</div>
+    <div class="lbar"><div id="licBar" style="width:0%"></div></div>
+    <div class="license-note">Only paid, documented carpentry/construction W-2 hours count toward the FL Certified GC experience requirement. Window cleaning does NOT count here. This is the number to grow — an hour on a real site beats any lesson in this app.</div>
+  </div>
+  <div class="logrow">
+    <div class="lr-top"><span class="lr-nm">🔨 Add W-2 trade hours</span><span class="lr-cur">Total: <b id="cHours">0</b> hrs</span></div>
+    <div class="lr-hint">Log paid carpentry/construction hours as you work them. Keep the pay stubs.</div>
+    <div class="log-in"><input type="number" step="0.5" id="inHours" placeholder="hours" inputmode="decimal"><button onclick="logHours()">ADD</button></div>
+  </div>
+  <div class="sec-head"><div class="bar"></div><h2>MY RECORDS</h2></div>
+  <div class="stat-grid">
+    <div class="stat"><div class="lab">💵 EARNED (TRADE)</div><div class="val" id="sEarned">$0</div><div class="sub">career income logged</div></div>
+    <div class="stat"><div class="lab">🏗️ DEALS ANALYZED</div><div class="val" id="sDeals">0</div><div class="sub">reps build the eye</div></div>
+  </div>
+  <div class="logrow"><div class="lr-top"><span class="lr-nm">💵 Add trade earnings ($)</span><span class="lr-cur">Total: <b id="cEarned">$0</b></span></div><div class="log-in"><input type="number" id="inEarned" placeholder="amount" inputmode="numeric"><button onclick="logEarned()">ADD</button></div></div>
+  <div class="logrow"><div class="lr-top"><span class="lr-nm">🏗️ Log a deal analyzed</span><span class="lr-cur">Total: <b id="cDeals">0</b></span></div><div class="log-in"><input type="text" id="inDeal" placeholder="address / note"><button onclick="logDeal()">LOG</button></div></div>
+  <div class="sec-head"><div class="bar"></div><h2>PRs (RECORD ONLY)</h2></div>
+  <div class="logrow">
+    <div class="lr-top"><span class="lr-nm">🏋️ Bench / Squat / Deadlift 1RM</span></div>
+    <div class="lr-hint">A record you keep — lifting lives in your Keystones, not the career game.</div>
+    <div class="log-in">
+      <input type="number" id="inBench" placeholder="bench" inputmode="numeric">
+      <input type="number" id="inSquat" placeholder="squat" inputmode="numeric">
+      <input type="number" id="inDead" placeholder="dead" inputmode="numeric">
+      <button onclick="logPRs()">SAVE</button>
+    </div>
+    <div class="lr-cur" style="margin-top:8px;text-align:left" id="prLine">Bench 275 · Squat 135 · Dead 135 · Total <b>545</b></div>
+  </div>
+  <div class="warn-banner">⚠️ <b>Read before the jobsite:</b> these lessons are a scaffold to keep you moving daily — an AI's trade content can have gaps or errors. Verify anything structural, load-bearing, or code-related against a real source (a foreman, code books, a trade text) before relying on it for real work.</div>
+  <button class="ghost-btn danger" onclick="hardReset()">⟲ RESET ALL DATA</button>
+  <div class="tiny">THE BUILD v3 · test-gated mastery · career-only game + keystones<br>Add to Home Screen: Share → Add to Home Screen</div>
+</section>
+</div>
+
+<div id="toast"></div>
+<div id="lvlup" onclick="closeLvlup()"><div class="lu-box">
+  <div class="lu-flash">RANK UP</div>
+  <div class="lu-num" id="luNum">2</div>
+  <div class="lu-rank" id="luRank"></div>
+  <div class="lu-unlock" id="luUnlock"></div>
+  <div class="lu-tap">tap to continue</div>
+</div></div>
+
+<script>
+/* ============================================================
+   THE BUILD v3 — Curriculum Content
+   Each knowledge mission has:
+     learn: [ {h, b} ]   multi-page cards (heading + body)
+     doThis: string      exact IRL practice steps
+     proTips: [string]   insider edges
+     test: [ {q, type, options?, answer, why} ]  gates XP
+   Action missions have type:'action' + a simple confirm.
+   concept: short id used for mastery meters + spaced repetition.
+   deps: [concept ids] that must be mastered first (mastery gating).
+   ============================================================ */
+
+const T1 = [
+  /* ---------------- 1. TAPE MEASURE ---------------- */
+  {
+    id:'tape', concept:'Measurement', deps:[], tier:'T1', type:'lesson',
+    title:"Read a Tape to 1/16\"", icon:"📏", baseXP:60,
+    learn:[
+      {h:"The trade's alphabet",
+       b:"Before you cut anything, you have to read the tape — accurately, instantly, without counting little lines. A carpenter who fumbles measurements is a carpenter who wastes lumber and gets sent home. This is the single most-used skill on any jobsite, and it's the first thing a foreman will quietly test you on. Master it and you look like you belong. Miss it and everything downstream is wrong."},
+      {h:"How the marks break down",
+       b:"Between every inch, the marks divide the space in halves. The LONGEST mark past the inch number is 1/2\". Halfway to that on either side is 1/4\". Split those and you get 1/8\". The SHORTEST marks are 1/16\". So from one inch to the next: 1/16, 2/16(=1/8), 3/16, 4/16(=1/4), 5/16, 6/16(=3/8), 7/16, 8/16(=1/2)… and so on. The longer the mark, the 'rounder' the fraction."},
+      {h:"Read it in sixteenths, then simplify",
+       b:"The pro trick: count the tiny marks as sixteenths, THEN simplify. See a mark 6 lines past the 4-inch? That's 4 and 6/16 = 4 and 3/8\". Pros say '4 and three-eighths' without thinking. You're not measuring to '6 little lines' — you're reading a real fraction. Always reduce: 2/16→1/8, 4/16→1/4, 8/16→1/2, 12/16→3/4."},
+      {h:"The sliding hook is NOT broken",
+       b:"The metal hook on the end of your tape wiggles about 1/16\". Rookies think it's damaged — it's engineered that way. When you HOOK the tape on an edge (outside measurement) it slides out 1/16\" to account for the hook's thickness. When you BUTT it into a corner (inside measurement) it slides in. That tiny float makes both reads accurate. Never 'fix' it."}
+    ],
+    doThis:"Grab a real tape measure. Measure 10 objects around you — a book, a door width, your phone, a table edge — to the nearest 1/16\". Say each one out loud as inches + a reduced fraction ('7 and five-eighths'). Then hook the tape on an edge, then butt it into a corner, and notice the hook slide. Keep going until you can read ANY mark instantly without counting.",
+    proTips:[
+      "'Burn an inch' for precision cuts: start your measurement at the 1-inch mark instead of the hook end (the hook can flex), then subtract 1\". Steadier reads on fine work.",
+      "The black diamond marks (~every 19.2\") are for engineered floor trusses — 5 per 8ft. Ignore them for standard framing.",
+      "Red numbers every 16\" mark standard stud spacing — the tape is literally reminding you where studs go.",
+      "Bend a slight arch into the blade when reaching across a gap; a stiff tape spans farther without a helper."
+    ],
+    test:[
+      {q:"A mark sits 6 little lines (1/16ths) past the 3-inch number. What's the reading?",
+       type:'mc', options:["3 and 3/8\"","3 and 6/8\"","3 and 6/32\"","3 and 1/4\""],
+       answer:0, why:"6/16 reduces to 3/8, so 3 and 3/8\"."},
+      {q:"Reduce 12/16 to its simplest fraction. Type just the fraction (e.g. 1/2):",
+       type:'text', answer:"3/4", why:"12/16 = 3/4."},
+      {q:"The hook on the end of your tape slides about 1/16\". This is:",
+       type:'mc', options:["A defect — replace the tape","Intentional, to account for hook thickness","Only on cheap tapes","A sign it's been dropped"],
+       answer:1, why:"The float lets the same tape read accurate inside AND outside measurements."}
+    ]
+  },
+
+  /* ---------------- 2. SPEED SQUARE ---------------- */
+  {
+    id:'speedsquare', concept:'Layout Tools', deps:['tape'], tier:'T1', type:'lesson',
+    title:"The Speed Square", icon:"📐", baseXP:65,
+    learn:[
+      {h:"The most-used tool after the tape",
+       b:"A speed square (a triangle, usually 7\") is the fastest marking and guiding tool on a jobsite. It does four jobs at once, which is why it lives in every carpenter's pouch. If the tape is how you measure, the speed square is how you mark square and cut straight."},
+      {h:"Its four jobs",
+       b:"(1) Mark a perfect 90° crosscut line across a board. (2) Mark a 45° miter. (3) Act as a SAW FENCE — hold it against the board edge and run your circular saw along it for a dead-straight cut. (4) Read any roof or stair ANGLE off the degree scale printed on the hypotenuse. One tool, four constant uses."},
+      {h:"Why the lipped edge matters",
+       b:"One edge of the square has a raised lip (the 'fence'). You hook that lip over the edge of your board. Because the lip references the board's edge, the 90° leg is automatically square to that edge — every time, no guessing. This is what makes it fast: hook, mark, done. If your lines aren't square, you're not seating the lip fully against the edge."},
+      {h:"As a saw guide (the pro move)",
+       b:"For a square crosscut with a circular saw: hook the lip on the board's edge, hold the square firmly, and slide the saw's baseplate along the square's edge as you cut. The blade follows the square, giving you a clean 90° with no pencil line needed. This is faster and straighter than freehanding to a line — and it's how experienced framers rip through repetitive cuts."}
+    ],
+    doThis:"Take a speed square and a scrap board. (1) Hook the lip on the edge and mark a 90° line. (2) Mark a 45°. (3) If you can, hook it and run a circular saw or even a handsaw along the edge for a square cut. Check with your eye or a level that the crosscut is truly square to the board edge. Feel how the lip references the edge for you.",
+    proTips:[
+      "Keep the square PINNED with your thumb near the pivot; most bad cuts come from the square creeping mid-cut.",
+      "The pivot point (the notch at the 90° corner) is your anchor for scribing angles — plant it and swing to any degree.",
+      "A cheap aluminum square that's slightly bent throws every cut off. Check a new one for square against a known-straight edge before trusting it.",
+      "Write your name on it in paint pen. Speed squares vanish on jobsites faster than anything else you own."
+    ],
+    test:[
+      {q:"Name one of the four jobs a speed square does. Which of these is NOT one of them?",
+       type:'mc', options:["Mark a 90° line","Guide a circular saw","Check if concrete is cured","Read a roof angle"],
+       answer:2, why:"It marks 90°/45°, guides a saw, and reads angles. It has nothing to do with concrete curing."},
+      {q:"The raised lip on one edge of the square is for:",
+       type:'mc', options:["Hooking the board's edge so your line is square to it","Hanging it on your belt","Measuring thickness","Nothing — it's decorative"],
+       answer:0, why:"The lip references the board edge, making the 90° leg automatically square."},
+      {q:"Your crosscut lines keep coming out slightly off-square. Most likely cause?",
+       type:'mc', options:["The pencil is too sharp","The lip isn't seated fully against the board edge","The board is too long","You're pressing too hard"],
+       answer:1, why:"If the lip isn't flush to the edge, the reference is off and so is the line."}
+    ]
+  },
+
+  /* ---------------- 3. SQUARE LEVEL PLUMB ---------------- */
+  {
+    id:'slp', concept:'Accuracy', deps:['speedsquare'], tier:'T1', type:'lesson',
+    title:"Square, Level & Plumb", icon:"🎯", baseXP:65,
+    learn:[
+      {h:"Three words you'll hear all day",
+       b:"Every experienced carpenter is obsessed with three conditions: square, level, and plumb. They're not interchangeable, and mixing them up marks you as green instantly. Get all three right and your work is professional. Miss one and you get callbacks, gaps, and doors that won't close."},
+      {h:"SQUARE = 90° corners",
+       b:"Square means two surfaces meet at a true right angle (90°). A picture frame, a door opening, a wall corner, a deck — all need to be square or nothing else fits. Drywall, tile, and trim all assume square corners. 'Out of square' is why a cabinet won't sit flush or a tiled floor drifts."},
+      {h:"LEVEL = perfectly horizontal",
+       b:"Level means flat side-to-side, matching the horizon — the direction water would sit still. A shelf, a countertop, a floor, the top plate of a wall should be level. You check it with a spirit level: the bubble sits dead-center between the lines when level. A floor that's out of level makes a marble roll and a fridge lean."},
+      {h:"PLUMB = perfectly vertical",
+       b:"Plumb means straight up-and-down — the direction a dropped weight (a 'plumb bob') hangs. Wall studs, door jambs, and posts must be plumb. Here's the key trap: a wall can be LEVEL along its top edge but still not PLUMB if the whole wall leans. Level is horizontal; plumb is vertical; they're checked on different axes. A door in an out-of-plumb jamb will swing open or shut by itself."}
+    ],
+    doThis:"Get a level (a real spirit level, or a phone level app to learn the concept). (1) Check a shelf or table for LEVEL — read the bubble. (2) Check a door frame or wall stud for PLUMB — hold the level vertically. (3) Now find ONE thing in your home that's out of level or out of plumb (older houses have plenty). Name which condition it fails and how you'd know.",
+    proTips:[
+      "A door that swings open or closed on its own is the classic 'jamb isn't plumb' tell — carpenters diagnose it across the room.",
+      "For plumb without a level, a weighted string (plumb bob) never lies — gravity is free and perfectly accurate.",
+      "Check your level itself: set it on a surface, note the bubble, then flip it end-for-end. If the bubble reads differently, your level is off.",
+      "'Level' and 'flat' aren't the same — a floor can be flat (no dips) but sloped (not level). Both matter for different jobs."
+    ],
+    test:[
+      {q:"A wall's top edge reads level, but the whole wall leans slightly. The wall is:",
+       type:'mc', options:["Level but not plumb","Plumb but not level","Square","Fine — level is all that matters"],
+       answer:0, why:"Level is horizontal (the top checks out); plumb is vertical (the lean fails it). Different axes."},
+      {q:"Which condition means a true 90° corner?",
+       type:'mc', options:["Level","Plumb","Square","Flush"],
+       answer:2, why:"Square = 90°. Level is horizontal, plumb is vertical."},
+      {q:"A door that slowly swings shut by itself most likely means:",
+       type:'mc', options:["The floor is too flat","The jamb isn't plumb","The door is too heavy","The hinges are new"],
+       answer:1, why:"An out-of-plumb jamb lets gravity pull the door one way."}
+    ]
+  },
+
+  /* ---------------- 4. 3-4-5 ---------------- */
+  {
+    id:'345', concept:'Accuracy', deps:['slp'], tier:'T1', type:'lesson',
+    title:"The 3-4-5 Rule", icon:"📐", baseXP:70,
+    learn:[
+      {h:"Squaring big things without a big square",
+       b:"A 7\" speed square can't tell you if a 12-foot deck or a foundation is square. For big layouts, carpenters use the 3-4-5 rule — a fast, ancient trick that proves a corner is a perfect 90° using only a tape measure."},
+      {h:"How it works",
+       b:"From the corner, measure 3 units along one side and mark it. Measure 4 units along the other side and mark it. Now measure the straight-line DIAGONAL between those two marks. If that diagonal is exactly 5 units, the corner is a perfect 90°. If it's more than 5, the corner is open (>90°); less than 5, it's tight (<90°). Adjust until the diagonal reads exactly 5."},
+      {h:"It's the Pythagorean theorem doing real work",
+       b:"3² + 4² = 9 + 16 = 25 = 5². That's why it works — it's a right triangle. And it scales with ANY unit: feet, yards, meters. For bigger, more accurate layouts use multiples: 6-8-10, 9-12-15, or 12-16-20. Bigger triangles = more accurate corners, because small errors matter less over a longer diagonal."},
+      {h:"Where you'll use it",
+       b:"Squaring up foundation forms, deck frames, wall layouts on a slab, tile grids, fence lines. Anytime two lines meet and MUST be 90° over a distance too big for a square. It's one of those things that separates someone who 'knows a little' from someone who can actually lay out a structure."}
+    ],
+    doThis:"On a floor, driveway, or with two boards, form a corner. Measure and mark 3 feet along one line and 4 feet along the other. Measure the diagonal between the marks. Adjust one line until the diagonal is exactly 5 feet — now the corner is square. Then try it bigger: 6-8-10. Notice the bigger triangle feels more precise.",
+    proTips:[
+      "On big layouts, always use the largest multiple that fits (12-16-20 over 3-4-5) — long diagonals expose tiny errors that short ones hide.",
+      "Check BOTH diagonals of a rectangle: if the two diagonals are equal length, the whole rectangle is square. Fast final check for decks and forms.",
+      "Keep 6-8-10 memorized as your default — most framing spaces are big enough for it and it's more forgiving than 3-4-5.",
+      "Pull tape from the same reference point each time; sloppy hook placement is the usual reason a 'squared' corner still drifts."
+    ],
+    test:[
+      {q:"You mark 3 ft on one side, 4 ft on the other. For a perfect 90° corner, the diagonal must read:",
+       type:'text', answer:"5", why:"3-4-5 right triangle: the diagonal is exactly 5 ft."},
+      {q:"Your diagonal measures 5.5 ft instead of 5. The corner is:",
+       type:'mc', options:["Open — more than 90°","Tight — less than 90°","Perfectly square","Impossible to tell"],
+       answer:0, why:"A longer-than-5 diagonal means the corner is spread open past 90°."},
+      {q:"For a large, accurate layout, which multiple is best?",
+       type:'mc', options:["3-4-5","1-2-3","12-16-20","2-3-4"],
+       answer:2, why:"12-16-20 is the same ratio scaled up; the longer diagonal reveals small errors. (1-2-3 and 2-3-4 aren't even right triangles.)"},
+      {q:"A quick way to confirm a whole rectangle is square:",
+       type:'mc', options:["Measure both diagonals — equal means square","Check one corner only","Measure the longest side","Weigh it"],
+       answer:0, why:"Equal diagonals prove a rectangle is square."}
+    ]
+  },
+
+  /* ---------------- 5. FRAMED WALL ---------------- */
+  {
+    id:'wall', concept:'Framing', deps:['tape','slp'], tier:'T1', type:'lesson',
+    title:"Anatomy of a Framed Wall", icon:"🧱", baseXP:70,
+    learn:[
+      {h:"The skeleton of every building",
+       b:"Almost every wall in a wood-framed house is the same kit of parts. Learn the anatomy once and you can read, build, or repair any of them. A foreman will point at a wall and use these words expecting you to know them."},
+      {h:"Plates and studs",
+       b:"The BOTTOM PLATE (or sole plate) is the horizontal 2x that's fastened to the floor. The STUDS are the vertical members standing on it — usually 2x4 or 2x6. The TOP PLATE caps the studs; in most load-bearing walls it's DOUBLED (two stacked 2x's = 'double top plate') to tie walls together and carry load. So bottom-up: bottom plate → studs → double top plate."},
+      {h:"Framing an opening",
+       b:"A door or window can't just interrupt the studs — the load above has to go somewhere. Parts of an opening: the HEADER is the beam across the top that carries the weight above and redirects it around the opening. KING STUDS are full-height studs on each side of the opening. JACK STUDS (a.k.a. trimmers) sit inside the kings, cut shorter to hold the header up. A window also has a SILL (bottom of the opening) and short CRIPPLE studs above the header and below the sill to maintain stud spacing."},
+      {h:"Why the parts matter",
+       b:"Every part has a job: the header carries load, the jacks support the header, the kings keep it all rigid and tie it to the plates. Undersize a header or skip a jack and the opening sags — doors bind, drywall cracks. This anatomy is also how you SPOT load paths: the header hands load to the jacks, jacks to the plates, plates to the floor, floor to the foundation."}
+    ],
+    doThis:"Sketch a wall with a door in it. Label every part: bottom plate, studs, double top plate, header, king studs, jack/trimmer studs. Then add a window nearby and label its sill and cripple studs. If you can, find a framed wall in a garage, basement, or unfinished space and physically point to each part.",
+    proTips:[
+      "'King and jack' is easy to remember: the KING stands full height beside the door like a guard; the JACK is cut short to prop up the header.",
+      "Header size grows with opening width and load — a 3ft closet door and a 12ft garage opening need very different headers. Bigger span = beefier header.",
+      "Cripple studs keep drywall-nailing and stud spacing consistent above/below openings — skip them and your sheet edges float.",
+      "On non-load-bearing (partition) walls, a header can be minimal or just a flat 2x — because there's no load above to carry."
+    ],
+    test:[
+      {q:"In a framed wall, the beam across the top of a door opening that carries the load above is the:",
+       type:'mc', options:["Sill","Header","Bottom plate","Cripple"],
+       answer:1, why:"The header carries and redirects the load around the opening."},
+      {q:"Which part is cut SHORTER and directly holds the header up?",
+       type:'mc', options:["King stud","Jack (trimmer) stud","Top plate","Sill"],
+       answer:1, why:"Jack/trimmer studs sit inside the kings and support the header."},
+      {q:"Bottom-to-top, a load-bearing wall stacks as:",
+       type:'mc', options:["Bottom plate → studs → double top plate","Header → studs → sill","Top plate → jacks → floor","Studs → cripples → bottom plate"],
+       answer:0, why:"Bottom plate, then vertical studs, then the doubled top plate."},
+      {q:"The load path around a door goes: header →",
+       type:'mc', options:["directly to the foundation","jack studs → plates → floor → foundation","the drywall","the roof"],
+       answer:1, why:"Header to jacks to plates to floor to foundation — that's the chain."}
+    ]
+  },
+
+  /* ---------------- 6. 16 OC ---------------- */
+  {
+    id:'oc', concept:'Framing', deps:['wall','tape'], tier:'T1', type:'lesson',
+    title:"16\" On Center — and Why", icon:"📊", baseXP:65,
+    learn:[
+      {h:"What 'on center' actually means",
+       b:"'On center' (abbreviated O.C.) means the spacing is measured from the CENTER of one member to the CENTER of the next — not edge-to-edge, not gap between. So '16 inches on center' means stud centers are 16\" apart. This trips up beginners who measure the gap instead of center-to-center and end up with everything off by 1.5\"."},
+      {h:"Why 16 inches specifically",
+       b:"Building sheet goods — drywall, plywood, OSB — come in 4-foot widths. 4 feet = 48 inches. And 48 ÷ 16 = 3 exactly. So with studs 16\" O.C., a 4ft sheet spans exactly 3 stud bays and its edges land dead-center on a stud at 0\", 16\", 32\", and 48\". Every sheet edge lands on solid wood to nail to, with zero cutting or floating edges. That's the whole reason the trade standardized on 16\"."},
+      {h:"24\" O.C. and when it's used",
+       b:"Some walls and most roof/floor systems use 24\" O.C. (48 ÷ 24 = 2 — sheets still land on members). 24\" uses less lumber but needs thicker sheathing and isn't allowed everywhere for every load. 16\" is the residential wall default; 24\" shows up in trusses and some engineered systems. Either way, the logic is the same: spacing that makes 4ft sheets land on framing."},
+      {h:"Laying it out — the tape trick",
+       b:"To lay out 16\" O.C., you pull your tape and mark at 16, 32, 48, 64… Because the FIRST stud's center is at 16\" but sheets start at 0\", framers actually mark the first regular stud so the sheet edge (at 48\") lands on a stud center — layout starts from the end of the wall. The red numbers on your tape at every 16\" exist exactly for this. Mark an X on the side of the line where the stud sits so you nail it in the right spot."}
+    ],
+    doThis:"On a wall, floor, or even a long board, mark stud layout at 16\" O.C. for a 4-foot run: marks at 16\", 32\", and 48\". Confirm that a 48\" sheet edge would land centered on your 48\" mark. Then do it again at 24\" O.C. (marks at 24\" and 48\"). Use the red numbers on your tape and put an X where each stud lands.",
+    proTips:[
+      "Always mark which SIDE of the line the stud goes (a quick X) — otherwise you're off by 1.5\" (the stud's thickness) and your sheets won't land right.",
+      "Hook your tape on the same end of the wall every time; layout errors compound if you flip reference points.",
+      "The red tape numbers (16, 32, 48…) are your built-in layout guide — the manufacturer put them there for exactly this.",
+      "'Crown up' and consistent layout let a drywaller or sheather work fast behind you — sloppy O.C. slows every trade after you."
+    ],
+    test:[
+      {q:"'16 inches on center' is measured:",
+       type:'mc', options:["From the gap between studs","From center of one stud to center of the next","From edge to edge","From the floor up"],
+       answer:1, why:"On center = center-to-center spacing."},
+      {q:"Why 16\" O.C.? Because a 4ft (48\") sheet divided by 16 equals:",
+       type:'text', answer:"3", why:"48 ÷ 16 = 3, so sheet edges land on studs at 0/16/32/48."},
+      {q:"A framing layout at 24\" O.C. means sheet edges land on members because 48 ÷ 24 =",
+       type:'text', answer:"2", why:"48 ÷ 24 = 2 — still lands on framing, just wider spacing."},
+      {q:"You mark your 16\" lines but forget to mark which side the stud sits on. Result?",
+       type:'mc', options:["No problem","Everything's off by the stud thickness (1.5\") and sheets miss","The wall is stronger","The studs get taller"],
+       answer:1, why:"Without the X, you can place the stud on the wrong side of the line and lose your sheet landing."}
+    ]
+  },
+
+  /* ---------------- 7. LOAD BEARING ---------------- */
+  {
+    id:'bearing', concept:'Structure', deps:['wall','oc'], tier:'T1', type:'lesson',
+    title:"Load-Bearing vs Non-Bearing", icon:"🏛️", baseXP:80,
+    learn:[
+      {h:"The difference that can collapse a house",
+       b:"A LOAD-BEARING wall carries weight from above — the roof, upper floors, ceiling joists — and transfers it down to the foundation. A NON-BEARING (partition) wall only divides space; it holds up nothing but itself. Confusing the two is one of the most dangerous mistakes in construction. Cut the wrong wall and ceilings sag, floors bounce, and in the worst case, things fail."},
+      {h:"How to tell — the clues",
+       b:"Clues a wall is LOAD-BEARING: (1) It runs PERPENDICULAR to the joists above — joists rest on it. (2) There's a wall or beam DIRECTLY BELOW it on the floor beneath, carrying load down in a stack. (3) It's an EXTERIOR wall (almost always bearing). (4) It sits near the center of the house where a main beam runs. Clues it may be NON-bearing: it runs parallel to the joists, it's a short closet partition, nothing stacks above or below it."},
+      {h:"Joist direction is your #1 tell",
+       b:"Go into the attic or basement and look at which way the joists run. If a wall sits UNDER joists and runs across them (perpendicular), those joists are likely bearing on it — it's carrying them. If the wall runs the same direction as the joists (parallel), it's more likely non-bearing. This one observation answers most questions. But 'likely' isn't 'certain.'"},
+      {h:"The rule that keeps you employed",
+       b:"⚠️ When in doubt, treat a wall as LOAD-BEARING until a qualified person (engineer, experienced GC) proves otherwise. Removing or cutting into a bearing wall requires engineering and a properly sized beam/header to carry the load across the new opening — you can't just take it out. People die and houses fail when someone 'was pretty sure' it wasn't bearing. Never guess with structure."}
+    ],
+    doThis:"Pick an interior wall in your home. Go look at the joists above it (attic or from the basement below). Decide: is this wall bearing or non-bearing, and WHY — which clue told you (joist direction? something stacked below? exterior?). Write down your reasoning. Do this for two different walls and compare.",
+    proTips:[
+      "Exterior walls are essentially always load-bearing — they hold up the roof and everything under it. Start there when orienting yourself.",
+      "A beam or post line in the basement usually sits directly under a bearing wall or bearing point above — follow the load straight down.",
+      "Mid-span interior walls running the length of the house are often bearing a central beam or ridge — treat them with respect.",
+      "Even a 'non-bearing' wall can hide plumbing, electrical, or ductwork — 'safe to remove structurally' never means 'just start swinging a hammer.'"
+    ],
+    test:[
+      {q:"A load-bearing wall carries weight and transfers it to the:",
+       type:'mc', options:["Roof","Foundation","Attic","Drywall"],
+       answer:1, why:"Load goes DOWN through bearing walls to the foundation."},
+      {q:"The strongest single clue that an interior wall is load-bearing:",
+       type:'mc', options:["It's painted","Joists above run perpendicular and rest on it","It has a door","It's the longest wall"],
+       answer:1, why:"Joists bearing on the wall (perpendicular, resting on it) is the classic tell."},
+      {q:"You're not sure if a wall is bearing. The correct assumption is:",
+       type:'mc', options:["Assume it's non-bearing and remove it","Assume it's load-bearing until a qualified person proves otherwise","Flip a coin","Ask a neighbor"],
+       answer:1, why:"Structure is never a guess. Bearing-until-proven-otherwise keeps people safe."},
+      {q:"Exterior walls are:",
+       type:'mc', options:["Almost always load-bearing","Never load-bearing","Only bearing on one-story homes","Bearing only if brick"],
+       answer:0, why:"Exterior walls hold up the roof and floors — essentially always bearing."}
+    ]
+  },
+
+  /* ---------------- 8. JOISTS RAFTERS SPANS ---------------- */
+  {
+    id:'spans', concept:'Structure', deps:['bearing'], tier:'T1', type:'lesson',
+    title:"Joists, Rafters & Spans", icon:"🪵", baseXP:75,
+    learn:[
+      {h:"The horizontal and angled bones",
+       b:"JOISTS are the horizontal members that carry floor or ceiling loads, spaced 16\" or 24\" O.C. RAFTERS are the angled members that form a pitched roof, running from the walls up to the ridge. Together with studs, they're the skeleton. Knowing the vocabulary and how they carry load lets you read a structure instead of just staring at sticks of wood."},
+      {h:"SPAN — the make-or-break number",
+       b:"SPAN is the distance a member bridges between supports without anything holding up the middle. A joist spanning 8 feet between two walls has an 8ft span. The longer the span, the DEEPER (taller) or more closely spaced the member has to be to avoid sagging or bouncing. A 2x6 can only span so far before it's bouncy; a 2x10 spans much farther. Overspanning is a real structural failure, not just a comfort issue."},
+      {h:"Depth beats width for spanning",
+       b:"For carrying load over a span, the DEPTH of a joist (the tall dimension) matters far more than its width. A 2x10 is dramatically stiffer than a 2x6 even though it's only 4\" deeper — stiffness scales with the cube of depth. That's why floor joists are tall and narrow, oriented with the tall dimension vertical. Lay that same board flat and it sags immediately."},
+      {h:"Span tables — where the answer lives",
+       b:"You don't guess maximum spans — code SPAN TABLES tell you the max distance a given size, species, grade, and spacing can safely cover for a given load. A foreman or plans will specify '2x10 @ 16\" O.C.' because someone checked the table. Your job is to know spans exist, that bigger loads/longer spans need beefier or closer members, and to VERIFY against the table (or the plans/engineer) — never eyeball structural spans."}
+    ],
+    doThis:"Find a joist or beam you can see (basement ceiling, deck, attic). Measure its SPAN — the clear distance between its supports. Note its rough size by measuring the depth (a 2x8 is ~7.25\" deep, a 2x10 ~9.25\"). Record span + size. Then imagine that same board laid flat instead of tall — understand why it would sag.",
+    proTips:[
+      "Nominal vs actual: a '2x10' is actually 1.5\" × 9.25\". Lumber is named by rough-sawn size, then planed smaller. Memorize the common actuals.",
+      "Bouncy floor? Usually joists spanning near their limit. Adding blocking or a mid-span beam shortens the effective span and stiffens it.",
+      "Doubling a joist (two nailed together) roughly doubles its load capacity — how framers beef up under a heavy point like a bathtub.",
+      "Engineered members (I-joists, LVL) span much farther than dimensional lumber for the same depth — increasingly standard in new homes."
+    ],
+    test:[
+      {q:"'Span' refers to:",
+       type:'mc', options:["The width of a board","The distance a member bridges between supports","How many nails it takes","The weight of the wood"],
+       answer:1, why:"Span is the unsupported distance between supports."},
+      {q:"To carry load over a longer span, the most important dimension of a joist is its:",
+       type:'mc', options:["Width","Depth (the tall dimension)","Length of nails","Color"],
+       answer:1, why:"Depth drives stiffness — it scales far faster than width."},
+      {q:"A '2x10' actually measures about:",
+       type:'mc', options:["2\" × 10\"","1.5\" × 9.25\"","1\" × 10\"","2.5\" × 10.5\""],
+       answer:1, why:"Nominal 2x10 = actual 1.5\" × 9.25\" after planing."},
+      {q:"How do you find the maximum safe span for a given joist?",
+       type:'mc', options:["Guess based on feel","Use a code span table (or the plans/engineer)","Whatever fits","Ask the lumber yard clerk"],
+       answer:1, why:"Span tables give the verified max for size/species/spacing/load. Never eyeball structure."}
+    ]
+  },
+
+  /* ---------------- 9. BOARD FEET ---------------- */
+  {
+    id:'boardfeet', concept:'Trade Math', deps:['tape'], tier:'T1', type:'lesson',
+    title:"Estimating Board Feet", icon:"🔢", baseXP:80,
+    learn:[
+      {h:"How lumber is measured and priced",
+       b:"Framing and rough lumber is often measured and sold in BOARD FEET — a volume unit, not a length. One board foot is a piece 1 inch thick × 12 inches wide × 12 inches long (= 144 cubic inches). Estimating board feet is how you figure out how much material a job needs and what it'll cost. A contractor who can't estimate materials can't bid a job."},
+      {h:"The formula",
+       b:"Board Feet = (Thickness in inches × Width in inches × Length in FEET) ÷ 12. The ÷12 converts because you're mixing inches and feet. Example: a 2x6 that's 8 feet long = (2 × 6 × 8) ÷ 12 = 96 ÷ 12 = 8 board feet. Lock this in: multiply the three dimensions (thickness-in × width-in × length-ft), divide by 12."},
+      {h:"Use NOMINAL sizes for ordering",
+       b:"Board-foot math uses the NOMINAL size — a '2x6' counts as 2×6 in the formula, even though it actually measures 1.5\"×5.5\". That's the convention for buying lumber: you order and price by nominal board feet. So don't plug in 1.5 × 5.5 — use 2 × 6. (Actual sizes matter when you're fitting pieces together, not when ordering volume.)"},
+      {h:"Estimating a whole job",
+       b:"For a real order you total the board feet of every piece on the cut list, then add WASTE — typically 10–15% — because you'll cut, miscut, and have offcuts. So: sum all board feet, multiply by ~1.1–1.15, and that's your order. Underestimate and you're driving back to the yard mid-job; overestimate wildly and you've wasted money. Good estimating is a profit skill."}
+    ],
+    doThis:"Calculate board feet for this cut list, showing your math: three 2x6 boards @ 10 ft each, and five 2x4 boards @ 8 ft each. (Do each type, then total.) Then add 12% waste to get a realistic order quantity. Check: does your total feel right for a small framing job?",
+    proTips:[
+      "Memorize the shortcut: a 2x6 gives 1 board foot per running foot (2×6÷12 = 1). So a 2x6 is 'board feet = length in feet.' Fast mental math.",
+      "A 2x4 = 0.667 bd ft per foot; a 2x8 = 1.333; a 2x10 = 1.667; a 2x12 = 2. Know these ratios and you estimate in your head.",
+      "Always round your ORDER up to whole boards in stock lengths — you can't buy 7.3 board feet, you buy the sticks that yield it.",
+      "Price per board foot varies by species and grade — the same volume of oak vs pine is a wildly different bill."
+    ],
+    test:[
+      {q:"How many board feet is a 2x6 that's 8 ft long? (thickness×width×length÷12)",
+       type:'text', answer:"8", why:"(2×6×8)÷12 = 96÷12 = 8 board feet."},
+      {q:"A 2x10 that is 12 ft long. Board feet? Type the number:",
+       type:'text', answer:"20", why:"(2×10×12)÷12 = 240÷12 = 20 board feet."},
+      {q:"In board-foot math, a '2x4' is plugged in as:",
+       type:'mc', options:["1.5 × 3.5 (actual)","2 × 4 (nominal)","4 × 2","3.5 × 1.5"],
+       answer:1, why:"Board feet use nominal sizes for ordering — 2 × 4, not the actual 1.5 × 3.5."},
+      {q:"You calculate 100 board feet for a job. A realistic amount to ORDER (with waste) is about:",
+       type:'mc', options:["Exactly 100","110–115","50","200"],
+       answer:1, why:"Add ~10–15% waste for cuts and offcuts → order ~110–115."}
+    ]
+  },
+
+  /* ---------------- 10. SAFETY ---------------- */
+  {
+    id:'safety', concept:'Safety', deps:[], tier:'T1', type:'lesson',
+    title:"Jobsite Safety Basics", icon:"🦺", baseXP:70,
+    learn:[
+      {h:"Getting hurt sends you home for good",
+       b:"Safety isn't a lecture — it's what keeps you employed and whole. New guys get hurt most because they don't know the hazards yet. A foreman watches how you handle tools and PPE before trusting you with anything. Show up safe and you show up serious. This content overlaps your OSHA 10 — finishing that card is itself a hireable credential."},
+      {h:"OSHA's 'Fatal Four'",
+       b:"In construction, four hazards cause the majority of deaths — OSHA calls them the Fatal Four: (1) FALLS (from heights — the #1 killer), (2) STRUCK-BY (flying/falling objects, vehicles), (3) CAUGHT-IN/BETWEEN (trench collapse, pinned by equipment), and (4) ELECTROCUTION (contact with live wires/power lines). Know these four cold — recognizing them is the first step to not becoming a statistic."},
+      {h:"PPE — your everyday armor",
+       b:"Personal Protective Equipment you'll use constantly: SAFETY GLASSES whenever cutting, nailing, or anything can fly; HEARING PROTECTION around saws and loud tools (hearing loss is permanent and cumulative); GLOVES for handling rough material; STEEL/COMPOSITE-TOE BOOTS; a HARD HAT where things can fall; and FALL PROTECTION (harness) at height. To run a circular saw: glasses and hearing protection minimum."},
+      {h:"The dangerous tools for rookies",
+       b:"Three tools hurt new carpenters most: the TABLE SAW (kickback — the board fires back at you if it binds; never stand directly behind the blade), the NAIL GUN (double-fire and accidental triggers — never rest it against your body, keep your hand clear), and the CIRCULAR SAW (blade bind and kickback — support the offcut, let the blade stop before setting it down). Never remove or wedge a tool's guard. Respect these and you keep all your fingers."}
+    ],
+    doThis:"From memory, write out the Fatal Four hazards. Then list the PPE you'd put on to run a circular saw. Finally, name the three tools most likely to injure a new carpenter and one safety rule for each. If you have OSHA 10 in progress, do another section today.",
+    proTips:[
+      "Never stand directly in line behind a table saw blade — kickback fires the board straight back at that spot.",
+      "Let a circular saw's blade come to a complete STOP before you set it down; a coasting blade grabs and jumps.",
+      "Keep your non-cutting hand behind the blade path, never in front of or beside it — most saw injuries are the guide hand.",
+      "Hearing damage is silent and permanent — cheap earplugs on every loud task pay off for 50 years. Veterans who skipped them can't hear their grandkids."
+    ],
+    test:[
+      {q:"Which is NOT one of OSHA's 'Fatal Four'?",
+       type:'mc', options:["Falls","Struck-by","Electrocution","Sunburn"],
+       answer:3, why:"The Fatal Four are Falls, Struck-by, Caught-in/between, and Electrocution."},
+      {q:"The #1 killer in construction is:",
+       type:'mc', options:["Falls","Loud noise","Splinters","Dehydration"],
+       answer:0, why:"Falls from height are the leading cause of construction deaths."},
+      {q:"'Kickback' — the board firing back at you — is the key danger of the:",
+       type:'mc', options:["Tape measure","Table saw","Level","Chalk line"],
+       answer:1, why:"Table saw kickback is a classic, serious hazard — never stand directly behind the blade."},
+      {q:"Minimum PPE to run a circular saw:",
+       type:'mc', options:["Just gloves","Safety glasses + hearing protection","A hard hat only","Nothing needed"],
+       answer:1, why:"Eye and hearing protection are the baseline for any powered saw."}
+    ]
+  },
+
+  /* ---------------- 11. READING A PLAN ---------------- */
+  {
+    id:'plans', concept:'Plans', deps:['tape','oc'], tier:'T1', type:'lesson',
+    title:"Reading a Basic Plan", icon:"📋", baseXP:80,
+    learn:[
+      {h:"'Reading the print' is a dividing line",
+       b:"A laborer moves material; a carpenter reads the plans and builds from them. Construction drawings use a visual language of symbols, scale, and dimensions. Learn to read a basic floor plan and you can build what's drawn instead of waiting to be told every move. This is a genuine step up in what you're worth on a crew."},
+      {h:"Scale — paper inches to real feet",
+       b:"Plans are drawn to SCALE so a whole house fits on a sheet. A common scale is 1/4\" = 1'-0\", meaning every quarter-inch on paper equals one real foot. So a wall drawn 3 inches long is 12 feet in reality (3 ÷ 0.25 = 12). An architect's scale ruler reads these directly. Always check the scale noted on each sheet — it's not always the same."},
+      {h:"Dimensions and symbols",
+       b:"DIMENSION lines run along the edges with numbers giving real measurements — you build to the written dimension, not by scaling the drawing (paper stretches and prints vary; the number rules). Common SYMBOLS: a door is a straight line with a quarter-circle arc showing its swing; a window is a break in the wall with thin lines; electrical outlets, switches, and fixtures each have their own symbol. Learn to spot doors, windows, and walls first."},
+      {h:"The title block and sheet types",
+       b:"Every sheet has a TITLE BLOCK (usually bottom-right corner) listing the project name, the SCALE, the sheet number, the date, and who drew it. A set has multiple sheets: FLOOR PLANS (top-down), ELEVATIONS (exterior side views), SECTIONS (a vertical slice showing how things stack), and DETAILS (zoomed-in connections). Sheets are lettered by discipline — 'A' for architectural. Cross-referencing sheets is how you build accurately: the plan says where, the section says how."}
+    ],
+    doThis:"Search online for a 'simple house floor plan.' On it, find and identify: (1) the SCALE noted on the drawing, (2) one DOOR symbol (look for the swing arc), (3) one WINDOW, and (4) the written DIMENSION of one room. Confirm you found all four. Bonus: find the title block and read the sheet number.",
+    proTips:[
+      "ALWAYS build to the written dimension, never by measuring (scaling) the printed drawing — prints stretch and copies distort; the number is truth.",
+      "Doors are the easiest symbol to spot — find the quarter-circle swing arcs and you've located every door instantly.",
+      "The title block tells you if you even have the right/current sheet — check the revision date before building from a set.",
+      "When a plan and a detail seem to disagree, the more detailed drawing usually governs — but flag it to the foreman, don't guess."
+    ],
+    test:[
+      {q:"At a scale of 1/4\" = 1'-0\", a wall drawn 3 inches long is how many feet in reality?",
+       type:'text', answer:"12", why:"3 ÷ 0.25 = 12 feet."},
+      {q:"When plans have a written dimension AND you could measure the drawing, you should:",
+       type:'mc', options:["Measure (scale) the drawing","Build to the written dimension","Average the two","Ignore both"],
+       answer:1, why:"Always build to the written dimension — printed drawings distort."},
+      {q:"On a floor plan, a quarter-circle arc represents a:",
+       type:'mc', options:["Window","Door and its swing","Outlet","Column"],
+       answer:1, why:"The arc shows the door's swing path."},
+      {q:"The title block on a drawing sheet tells you all EXCEPT:",
+       type:'mc', options:["Scale","Sheet number and date","The project name","The current weather"],
+       answer:3, why:"Title blocks carry project name, scale, sheet number, date, author — not the weather."}
+    ]
+  },
+
+  /* ---------------- ACTION MISSIONS (offline, honor-system, kept few) ---------------- */
+  {
+    id:'a_tools', concept:null, deps:['tape'], tier:'T1', type:'action',
+    title:"Buy Your Entry Tools", icon:"🛒", baseXP:50,
+    brief:"No tools = no job. Get the minimum kit that makes you hireable: a 25' tape measure and a 7\" speed square (~$30 total). A pencil and utility knife round it out. This is your ticket onto a jobsite.",
+    confirm:"I have a tape + speed square in hand"
+  },
+  {
+    id:'a_dale', concept:null, deps:['tape','slp'], tier:'T1', type:'action',
+    title:"Text Dale — Ask to Shadow One Day", icon:"📲", baseXP:90,
+    brief:"You've been waiting. Waiting logs zero GC hours. Offer ONE free day of labor — it removes all their risk and proves you show up. Send Dale Sharp this: \"Hey Dale — I'm serious about carpentry as a career. Could I shadow your crew for a day, no pay, just to learn and be useful? I'll bring my own tape and boots.\"",
+    confirm:"Message sent to Dale"
+  },
+  {
+    id:'a_tim', concept:null, deps:['tape','slp'], tier:'T1', type:'action', side:true,
+    title:"Text Tim — Same Ask", icon:"📲", baseXP:90,
+    brief:"Two shots beat one. Send Tim Burns the same free-shadow-day offer. Whoever says yes first is your on-ramp to real, documented W-2 hours.",
+    confirm:"Message sent to Tim"
+  },
+  {
+    id:'a_osha', concept:null, deps:['safety'], tier:'T1', type:'action',
+    title:"Finish OSHA 10", icon:"🎓", baseXP:100,
+    brief:"You have ~8.5 hours left and it's been sitting there. OSHA 10 is a real, listable credential that makes you hireable TODAY and proves you take safety seriously. Knock out a chunk now; finish it for the big payoff.",
+    confirm:"Made real OSHA 10 progress today"
+  }
+];
+
+/* future tiers kept as titles/teasers (content expands later) */
+const TIER_META = {
+  T1:{name:"Carpenter Fundamentals", icon:"🔨", rankToUnlock:1,
+      blurb:"Tools, measurement, framing, structure, trade math, safety, plans. The ground floor — nobody hires what can't read a tape."},
+  T2:{name:"Foreman & Crew Skills", icon:"📋", rankToUnlock:5,
+      blurb:"Build sequence, scheduling, the critical path, QC, managing subs, full plan sets. Unlocks when you've proven the fundamentals."},
+  T3:{name:"GC & Licensing", icon:"📜", rankToUnlock:8,
+      blurb:"The FL GC license, documented hours, the three exam areas, contracts, liens, permits. The credential that unlocks development."},
+  T4:{name:"Developer — BRRRR & Flips", icon:"🏗️", rankToUnlock:11,
+      blurb:"Deal analysis, the BRRRR cycle, ARV, the 70% rule, rehab estimating, scope of work, financing. Where the trade becomes wealth."}
+};
+
+</script>
+<script>
+/* ============================================================
+   THE BUILD v3 — Engine
+   Test-gated mastery. No chests, no jackpots, no loss-aversion.
+   Teach deeply → test → prove it → earn → go do reps.
+   ============================================================ */
+const KEY='thebuild_v3';
+const RANKS=["Apprentice","Tool Hand","Framer","Finish Carpenter","Lead Carpenter",
+  "Foreman","Site Super","Project Lead","Licensed GC","Builder-Owner","Developer","Magnate"];
+function xpForLevel(l){return Math.round(140*Math.pow(l,1.3));}
+function rankFor(l){return RANKS[Math.min(l-1,RANKS.length-1)];}
+const LICENSE_HOURS=8320;
+
+/* keystones — feed a small next-day XP multiplier (the only cross-wire) */
+const KEYSTONES=[
+  {id:'train',emoji:'🏋️',t:"Train",d:"Run and/or lift. Move the body."},
+  {id:'word',emoji:'✝️',t:"Time in the Word",d:"Scripture + prayer."},
+  {id:'screen',emoji:'📱',t:"Screen under target",d:"Under 4h today."},
+  {id:'food',emoji:'💰',t:"No eating out / drinks",d:"Packed food, water."},
+  {id:'adoniah',emoji:'💌',t:"Adoniah (weekly)",d:"Weekly call/letter.",weekly:true},
+];
+
+/* build lookup + dependency graph from content.js (T1[] + TIER_META) */
+const ALL = T1.slice(); // v3 ships Tier 1 fully; later tiers are teasers
+const BY_ID={}; ALL.forEach(m=>BY_ID[m.id]=m);
+
+/* ---------- STATE ---------- */
+let S=load();
+function fresh(){
+  return {
+    created:today(), todayKey:today(), day:1,
+    xp:0, level:1, streak:0, lastCleared:null,
+    dailyGoal:2,                 // required missions/reviews per day (short by design)
+    doneToday:[],                // mission ids finished today
+    reviewsToday:0,              // review questions answered today
+    dayState:'quest',
+    completed:{},                // id -> true (passed test / did action)
+    mastery:{},                  // concept -> 0..100
+    srs:{},                      // "id#qIdx" -> {due: dayNumber, ease}
+    keyDone:{}, keyStreak:0, keyLastAll:null, keyWeekly:{}, multiplier:1,
+    // session scratch
+    licHours:0, earned:0, deals:0, lifts:{bench:275,squat:135,dead:135},
+    lastSummary:null,
+  };
+}
+function load(){try{const r=JSON.parse(localStorage.getItem(KEY));if(r&&r.created)return mig(r);}catch(e){}return fresh();}
+function mig(r){const f=fresh();return{...f,...r,lifts:{...f.lifts,...(r.lifts||{})},completed:{...(r.completed||{})},mastery:{...(r.mastery||{})},srs:{...(r.srs||{})},keyDone:{...(r.keyDone||{})},keyWeekly:{...(r.keyWeekly||{})}};}
+function save(){localStorage.setItem(KEY,JSON.stringify(S));}
+function today(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function weekKey(){const d=new Date();const o=new Date(d);o.setDate(d.getDate()-d.getDay());return o.getFullYear()+'-'+(o.getMonth()+1)+'-'+o.getDate();}
+function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/864e5);}
+
+/* ---------- MASTERY GATING ---------- */
+function conceptMastery(c){return S.mastery[c]||0;}
+function depsMet(m){ return (m.deps||[]).every(depId=>{ const dm=BY_ID[depId]; if(!dm) return true; return !!S.completed[depId]; }); }
+function tierUnlocked(tk){ return S.level>=TIER_META[tk].rankToUnlock; }
+
+/* next mission = first uncompleted, deps-met, in an unlocked tier, not a side quest */
+function nextMission(includeSide){
+  for(const m of ALL){
+    if(m.side && !includeSide) continue;
+    if(!tierUnlocked(m.tier)) continue;
+    if(S.completed[m.id]) continue;
+    if(!depsMet(m)) continue;
+    return m;
+  }
+  return null;
+}
+function lockedButWaiting(){
+  // missions blocked only by deps (for "keep going" curiosity)
+  return ALL.filter(m=>!S.completed[m.id] && tierUnlocked(m.tier) && !depsMet(m));
+}
+
+/* ---------- SPACED REPETITION ---------- */
+function srsKey(id,qi){return id+'#'+qi;}
+function scheduleSRS(id,qi,correct){
+  const k=srsKey(id,qi);
+  const cur=S.srs[k]||{ease:1,due:S.day};
+  if(correct){ cur.ease=Math.min(6,cur.ease+1); cur.due=S.day+Math.round(Math.pow(2,cur.ease)); }
+  else { cur.ease=1; cur.due=S.day+1; }
+  S.srs[k]=cur;
+}
+function dueReviews(){
+  const out=[];
+  Object.keys(S.srs).forEach(k=>{
+    if(S.srs[k].due<=S.day){
+      const [id,qi]=k.split('#'); const m=BY_ID[id];
+      if(m&&m.test&&m.test[+qi]) out.push({id,qi:+qi,m,q:m.test[+qi]});
+    }
+  });
+  return out;
+}
+
+/* ---------- DAY ROLLOVER ---------- */
+function checkDay(){
+  const t=today();
+  if(S.todayKey!==t){
+    S.day+=Math.max(1,daysBetween(S.todayKey,t));
+    // keystone multiplier from YESTERDAY carries into today
+    S.doneToday=[]; S.reviewsToday=0; S.dayState='quest';
+    S.keyDone={}; S.todayKey=t;
+    save();
+  }
+}
+
+/* ---------- XP ---------- */
+function addXP(n){
+  const gained=Math.round(n*S.multiplier);
+  S.xp+=gained; let leveled=false,last=S.level;
+  while(S.xp>=xpForLevel(S.level)){S.xp-=xpForLevel(S.level);S.level++;leveled=true;}
+  save();
+  if(leveled) showLevelUp(S.level);
+  renderRank();
+  return gained;
+}
+
+/* ============================================================
+   LESSON SESSION (swipeable cards + test)
+   session = {mode:'lesson'|'review', m, page, phase:'learn|do|pro|test',
+              testIdx, correctCount, wrongIds[], answered}
+   ============================================================ */
+let session=null;
+
+function startMission(m){
+  if(m.type==='action'){ session={mode:'action', m}; renderStage(); return; }
+  session={mode:'lesson', m, page:0, phase:'learn', testIdx:0, correct:0, wrong:[], answered:false, picked:null};
+  renderStage();
+}
+function startReview(rev){
+  // rehydrate full question objects from {id,qi} refs
+  const queue=rev.map(r=>{ const m=BY_ID[r.id]; return {id:r.id, qi:r.qi, m, q:m.test[r.qi]}; }).filter(x=>x.q);
+  session={mode:'review', queue, i:0, answered:false, picked:null, correct:0};
+  renderStage();
+}
+
+function lessonPages(m){
+  // build ordered pages: learn cards, do-this, pro-tips, then test handled separately
+  const pages=[];
+  m.learn.forEach(c=>pages.push({t:'learn',...c}));
+  pages.push({t:'do', h:"Do This — For Real", b:m.doThis});
+  pages.push({t:'pro', h:"Pro Tips", list:m.proTips});
+  return pages;
+}
+
+function advancePage(){
+  const m=session.m; const pages=lessonPages(m);
+  if(session.phase!=='test'){
+    if(session.page<pages.length-1){ session.page++; renderStage(); return; }
+    // move to test
+    session.phase='test'; session.testIdx=0; session.answered=false; session.picked=null;
+    renderStage(); return;
+  }
+}
+function backPage(){
+  if(session.phase==='test'){ // don't go back into test mid-answer for simplicity
+    return;
+  }
+  if(session.page>0){ session.page--; renderStage(); }
+}
+
+/* answer a test question (lesson or review) */
+function answerLesson(val){
+  const m=session.m; const q=m.test[session.testIdx];
+  const correct = checkAns(q,val);
+  session.answered=true; session.picked=val; session.wasCorrect=correct;
+  scheduleSRS(m.id, session.testIdx, correct);
+  if(correct) session.correct++;
+  else if(!session.wrong.includes(session.testIdx)) session.wrong.push(session.testIdx);
+  save(); renderStage();
+}
+function nextTestQ(){
+  const m=session.m;
+  if(session.testIdx < m.test.length-1){
+    session.testIdx++; session.answered=false; session.picked=null; renderStage(); return;
+  }
+  // test complete — grade + award
+  finishLesson();
+}
+function finishLesson(){
+  const m=session.m; const total=m.test.length;
+  const passed = session.correct===total; // must get all right for full mastery
+  // mastery: proportion correct feeds the concept meter
+  if(m.concept){
+    const gain = Math.round((session.correct/total)*100);
+    S.mastery[m.concept]=Math.max(S.mastery[m.concept]||0, Math.min(100, (S.mastery[m.concept]||0) + Math.round(gain/ (masteryLessonsFor(m.concept)) ) ));
+    // simpler: nudge toward mastery
+    S.mastery[m.concept]=Math.min(100, Math.max(S.mastery[m.concept]||0, avgConceptMastery(m.concept)));
+  }
+  // XP: base scaled by how clean the test was; full XP only if all correct
+  let award=m.baseXP;
+  if(!passed) award=Math.round(m.baseXP*0.5); // partial if you missed some (they'll resurface via SRS)
+  const gained=addXP(award);
+  // mark completed only if passed (mastery-gated progression)
+  if(passed){ S.completed[m.id]=true; }
+  if(!S.doneToday.includes(m.id)) S.doneToday.push(m.id);
+  recomputeMasteryMeters();
+  S.lastSummary={title:m.title, learned:m.learn.length, correct:session.correct, total, xp:gained, passed, concept:m.concept};
+  save();
+  session={mode:'summary', data:S.lastSummary, m};
+  maybeCloseDay();
+  renderStage();
+}
+
+function answerReview(val){
+  const cur=session.queue[session.i];
+  const correct=checkAns(cur.q,val);
+  session.answered=true; session.picked=val; session.wasCorrect=correct;
+  scheduleSRS(cur.id, cur.qi, correct);
+  if(correct) session.correct++;
+  S.reviewsToday++;
+  save(); renderStage();
+}
+function nextReview(){
+  if(session.i<session.queue.length-1){ session.i++; session.answered=false; session.picked=null; renderStage(); return; }
+  const total=session.queue.length;
+  const gained=addXP(15*total);
+  S.lastSummary={title:"Daily Review", review:true, correct:session.correct, total, xp:gained};
+  save();
+  session={mode:'summary', data:S.lastSummary};
+  maybeCloseDay();
+  renderStage();
+}
+
+function completeAction(){
+  const m=session.m;
+  S.completed[m.id]=true;
+  if(!S.doneToday.includes(m.id)) S.doneToday.push(m.id);
+  const gained=addXP(m.baseXP);
+  S.lastSummary={title:m.title, action:true, xp:gained};
+  save();
+  session={mode:'summary', data:S.lastSummary, m};
+  maybeCloseDay();
+  renderStage();
+}
+
+function checkAns(q,val){
+  if(q.type==='text'){
+    const norm=s=>(''+s).toLowerCase().replace(/["\s]/g,'').replace(/inches?|inch|in|feet|ft|"/g,'');
+    return norm(val)===norm(q.answer);
+  }
+  return val===q.answer; // mc index
+}
+
+/* mastery meter recompute from completed lessons per concept */
+function recomputeMasteryMeters(){
+  const byC={};
+  ALL.forEach(m=>{ if(m.concept&&m.type==='lesson'){ byC[m.concept]=byC[m.concept]||{done:0,total:0}; byC[m.concept].total++; if(S.completed[m.id])byC[m.concept].done++; }});
+  Object.keys(byC).forEach(c=>{ S.mastery[c]=Math.round(byC[c].done/byC[c].total*100); });
+}
+function avgConceptMastery(c){return S.mastery[c]||0;}
+function masteryLessonsFor(c){let n=0;ALL.forEach(m=>{if(m.concept===c&&m.type==='lesson')n++;});return Math.max(1,n);}
+
+/* ---------- DAY CLOSE ---------- */
+function requiredMet(){ return (S.doneToday.length + (S.reviewsToday>0?1:0)) >= S.dailyGoal; }
+function maybeCloseDay(){
+  if(requiredMet() && S.lastCleared!==today()){
+    const y=S.lastCleared;
+    if(y){const g=daysBetween(y,today());S.streak=g===1?S.streak+1:1;}else S.streak=1;
+    S.lastCleared=today(); addXP(30);
+  }
+  save();
+}
+
+/* ---------- KEYSTONES ---------- */
+function toggleKey(id){
+  const k=KEYSTONES.find(x=>x.id===id);
+  if(k.weekly){const wk=weekKey(); if(S.keyWeekly[id]===wk)delete S.keyWeekly[id]; else{S.keyWeekly[id]=wk;} }
+  else { if(S.keyDone[id])delete S.keyDone[id]; else S.keyDone[id]=true; }
+  const done=KEYSTONES.filter(x=>x.weekly?S.keyWeekly[x.id]===weekKey():S.keyDone[x.id]).length;
+  // multiplier: foundation held today => 1.5x XP (applies now)
+  S.multiplier = done>=KEYSTONES.length ? 1.5 : (done>=3?1.2:1);
+  if(done===KEYSTONES.length && S.keyLastAll!==today()){
+    const y=S.keyLastAll; if(y){const g=daysBetween(y,today());S.keyStreak=g===1?S.keyStreak+1:1;}else S.keyStreak=1;
+    S.keyLastAll=today();
+    toast('◆ Foundation held — 1.5× XP today!',0);
+  }
+  save(); renderKeys(); renderRank();
+}
+
+/* ---------- LOG ---------- */
+function logHours(){const v=parseFloat(document.getElementById('inHours').value);if(isNaN(v)||v<=0)return;S.licHours+=v;document.getElementById('inHours').value='';addXP(Math.min(60,Math.round(v*6)));toast(`+${v} W-2 hrs`,0);save();renderLog();}
+function logEarned(){const v=parseInt(document.getElementById('inEarned').value);if(isNaN(v)||v<=0)return;S.earned+=v;document.getElementById('inEarned').value='';toast(`+$${v}`,0);save();renderLog();}
+function logDeal(){const v=document.getElementById('inDeal').value.trim();if(!v)return;S.deals++;document.getElementById('inDeal').value='';addXP(15);toast('Deal logged',15);save();renderLog();}
+function logPRs(){const b=+document.getElementById('inBench').value,s=+document.getElementById('inSquat').value,d=+document.getElementById('inDead').value;if(b>0)S.lifts.bench=b;if(s>0)S.lifts.squat=s;if(d>0)S.lifts.dead=d;['inBench','inSquat','inDead'].forEach(x=>document.getElementById(x).value='');toast('PRs saved',0);save();renderLog();}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function render(){renderRank();renderStage();renderPath();renderKeys();renderLog();}
+
+function renderRank(){
+  document.getElementById('rankName').textContent=rankFor(S.level);
+  document.getElementById('rankLvl').textContent='LVL '+S.level;
+  const need=xpForLevel(S.level);
+  document.getElementById('xpFill').style.width=Math.min(100,S.xp/need*100)+'%';
+  document.getElementById('xpNow').textContent=S.xp+' XP';
+  document.getElementById('xpNext').textContent='/ '+need;
+  document.getElementById('streakN').textContent=S.streak;
+  const mult=document.getElementById('multBadge');
+  if(mult){ if(S.multiplier>1){mult.style.display='inline-block';mult.textContent=S.multiplier+'× XP';}else mult.style.display='none'; }
+}
+
+/* main MISSION stage router */
+function renderStage(){
+  const z=document.getElementById('stage');
+  // not in a session → show the day hub (mission list-of-one + review offer)
+  if(!session){ z.innerHTML=hubHTML(); renderDots(); return; }
+  if(session.mode==='summary'){ z.innerHTML=summaryHTML(session.data); return; }
+  if(session.mode==='action'){ z.innerHTML=actionHTML(session.m); return; }
+  if(session.mode==='review'){ z.innerHTML=reviewHTML(); return; }
+  z.innerHTML=lessonHTML(); // lesson mode
+}
+
+function renderDots(){
+  const el=document.getElementById('dayDots'); if(!el)return;
+  let h=''; const done=S.doneToday.length;
+  for(let i=0;i<S.dailyGoal;i++){const cls=i<done?'done':(i===done?'cur':'');h+=`<div class="dot ${cls}"></div>`;}
+  el.innerHTML=h;
+}
+
+function hubHTML(){
+  const rev=dueReviews();
+  const next=nextMission(false);
+  const cleared=requiredMet();
+  let html='';
+  // daily review card (fuses streak + SRS)
+  if(rev.length){
+    html+=`<div class="review-card" onclick="startReview(${JSON.stringify(rev.map(r=>({id:r.id,qi:r.qi}))).replace(/"/g,'&quot;')})">
+      <div class="rc-lab">🔁 DAILY REVIEW · ${rev.length} question${rev.length>1?'s':''}</div>
+      <div class="rc-t">Prove you still own it</div>
+      <div class="rc-d">Quick review of concepts you've mastered. Keeping your streak means keeping the knowledge. Tap to start.</div>
+    </div>`;
+  }
+  if(next){
+    const tm=TIER_META[next.tier];
+    const isAction=next.type==='action';
+    html+=`<div class="mission-lab">${cleared?'▲ OPTIONAL — KEEP GOING':'TODAY\'S MISSION'}</div>
+    <div class="hub-quest" onclick="startMission(BY_ID['${next.id}'])">
+      <div class="hq-top">
+        <span class="qtier">${tm.icon} ${tm.name.toUpperCase()}</span>
+        <span class="qtype ${isAction?'action':'lesson'}">${isAction?'ACTION':'LESSON'}</span>
+        <span class="qxp">+${next.baseXP}${S.multiplier>1?' ×'+S.multiplier:''}</span>
+      </div>
+      <div class="hq-ic">${next.icon}</div>
+      <div class="hq-title">${next.title}</div>
+      <div class="hq-sub">${isAction?'A real-world action — go do it, then confirm.':(next.learn.length+' pages · '+next.test.length+' questions to pass')}</div>
+      <button class="start-btn">${isAction?'OPEN MISSION →':'START LESSON →'}</button>
+    </div>`;
+  } else {
+    html+=`<div class="cleared"><div class="em">🏁</div><div class="big">TIER CLEARED</div>
+      <div class="sub">You've passed every available mission at your rank. Log W-2 hours and keep daily reviews to rank up and unlock the next tier.</div>
+      <div class="bonus">Next tier at LVL ${nextTierRank()}</div></div>`;
+  }
+  if(cleared){
+    html+=`<div class="daydone">◈ Daily goal met · 🔥 ${S.streak}-day streak · ${S.multiplier>1?S.multiplier+'× XP active':'complete keystones for bonus XP'}</div>`;
+  }
+  // curiosity: locked-but-waiting teaser
+  const waiting=lockedButWaiting()[0];
+  if(waiting){
+    html+=`<div class="locked-teaser">🔒 <b>${waiting.title}</b> unlocks once you master: ${(waiting.deps||[]).map(d=>BY_ID[d]?BY_ID[d].title:d).join(', ')}</div>`;
+  }
+  return html;
+}
+
+function lessonHTML(){
+  const m=session.m;
+  if(session.phase==='test') return testHTML();
+  const pages=lessonPages(m); const p=pages[session.page];
+  const tm=TIER_META[m.tier];
+  const total=pages.length;
+  let inner='';
+  if(p.t==='learn'){ inner=`<div class="card-kind learn">LEARN · ${session.page+1}/${m.learn.length}</div><h3 class="card-h">${p.h}</h3><p class="card-b">${p.b}</p>`; }
+  else if(p.t==='do'){ inner=`<div class="card-kind do">DO THIS IRL</div><h3 class="card-h">${p.h}</h3><p class="card-b">${p.b}</p>`; }
+  else if(p.t==='pro'){ inner=`<div class="card-kind pro">PRO TIPS</div><h3 class="card-h">${p.h}</h3>`+p.list.map(x=>`<div class="pro-item">▸ ${x}</div>`).join(''); }
+  const isLast = session.page===pages.length-1;
+  return `<div class="lesson-top">
+      <div class="lt-title">${m.icon} ${m.title}</div>
+      <div class="lt-x" onclick="quitSession()">✕</div>
+    </div>
+    <div class="progress-track">${pages.map((_,i)=>`<div class="pt ${i<=session.page?'on':''}"></div>`).join('')}<div class="pt ${'testpt'}"></div></div>
+    <div class="lesson-card">${inner}</div>
+    <div class="lesson-nav">
+      ${session.page>0?`<button class="ln-back" onclick="backPage()">← Back</button>`:`<div style="flex:1"></div>`}
+      <button class="ln-next" onclick="advancePage()">${isLast?'START TEST →':'Next →'}</button>
+    </div>`;
+}
+
+function testHTML(){
+  const m=session.m; const q=m.test[session.testIdx];
+  const tm=TIER_META[m.tier];
+  return `<div class="lesson-top">
+      <div class="lt-title">✍️ TEST · ${m.title}</div>
+      <div class="lt-x" onclick="quitSession()">✕</div>
+    </div>
+    <div class="test-prog">Question ${session.testIdx+1} of ${m.test.length} · get all right to master</div>
+    ${questionBlock(q, session.answered, session.picked, session.wasCorrect, 'answerLesson', 'nextTestQ')}`;
+}
+
+function reviewHTML(){
+  const cur=session.queue[session.i]; const q=cur.q;
+  return `<div class="lesson-top">
+      <div class="lt-title">🔁 REVIEW</div>
+      <div class="lt-x" onclick="quitSession()">✕</div>
+    </div>
+    <div class="test-prog">Review ${session.i+1} of ${session.queue.length} · from ${BY_ID[cur.id].title}</div>
+    ${questionBlock(q, session.answered, session.picked, session.wasCorrect, 'answerReview', 'nextReview')}`;
+}
+
+function questionBlock(q, answered, picked, wasCorrect, ansFn, nextFn){
+  let body='';
+  if(q.type==='mc'){
+    body=`<div class="opts">`+q.options.map((o,i)=>{
+      let cls='opt';
+      if(answered){ if(i===q.answer)cls+=' correct'; else if(i===picked)cls+=' wrong'; else cls+=' dim'; }
+      return `<div class="${cls}" ${answered?'':`onclick="${ansFn}(${i})"`}>${o}</div>`;
+    }).join('')+`</div>`;
+  } else {
+    body=`<div class="text-answer">
+      <input id="txtAns" type="text" placeholder="type your answer" ${answered?'disabled':''} inputmode="text">
+      ${answered?'':`<button onclick="${ansFn}(document.getElementById('txtAns').value)">CHECK</button>`}
+    </div>`;
+  }
+  let feedback='';
+  if(answered){
+    feedback=`<div class="feedback ${wasCorrect?'good':'bad'}">
+      <div class="fb-head">${wasCorrect?'✓ CORRECT':'✕ NOT QUITE'}</div>
+      ${!wasCorrect?`<div class="fb-ans">Answer: <b>${q.type==='mc'?q.options[q.answer]:q.answer}</b></div>`:''}
+      <div class="fb-why">${q.why}</div>
+    </div>
+    <button class="ln-next full" onclick="${nextFn}()">CONTINUE →</button>`;
+  }
+  return `<div class="q-block"><div class="q-text">${q.q}</div>${body}${feedback}</div>`;
+}
+
+function actionHTML(m){
+  const tm=TIER_META[m.tier];
+  return `<div class="lesson-top"><div class="lt-title">${m.icon} ${m.title}</div><div class="lt-x" onclick="quitSession()">✕</div></div>
+    <div class="action-card">
+      <div class="card-kind do">ACTION MISSION</div>
+      <p class="card-b">${m.brief}</p>
+      <div class="action-note">This one happens in the real world — no test. Do it, then confirm honestly. Faking it only cheats your own clock.</div>
+      <button class="complete-btn" onclick="completeAction()">✓ ${m.confirm.toUpperCase()}</button>
+      <button class="skip-btn" onclick="quitSession()">not yet →</button>
+    </div>`;
+}
+
+function summaryHTML(d){
+  const pct = d.total?Math.round(d.correct/d.total*100):100;
+  return `<div class="summary">
+    <div class="sum-em">${d.passed===false?'📘':(d.action?'✅':'🎉')}</div>
+    <div class="sum-big">${d.action?'MISSION DONE':(d.review?'REVIEW COMPLETE':(d.passed?'LESSON MASTERED':'LESSON DONE'))}</div>
+    <div class="sum-title">${d.title}</div>
+    <div class="sum-stats">
+      ${d.learned?`<div class="ss"><div class="ss-n">${d.learned}</div><div class="ss-l">pages learned</div></div>`:''}
+      ${d.total?`<div class="ss"><div class="ss-n">${d.correct}/${d.total}</div><div class="ss-l">correct</div></div>`:''}
+      <div class="ss"><div class="ss-n" style="color:var(--gold)">+${d.xp}</div><div class="ss-l">XP earned</div></div>
+    </div>
+    ${d.passed===false?`<div class="sum-note">You missed some — those questions will resurface in review until you own them. Partial XP awarded.</div>`:''}
+    ${d.review?`<div class="sum-note">Nice — keeping the streak keeps the knowledge. That's the whole point.</div>`:''}
+    <div class="sum-streak">🔥 ${S.streak}-day streak${S.multiplier>1?' · '+S.multiplier+'× XP active':''}</div>
+    <button class="ln-next full" onclick="closeSummary()">${requiredMet()?'DONE FOR TODAY':'NEXT MISSION →'}</button>
+    ${requiredMet()?`<div class="sum-send">You've hit today's goal. Best move now: <b>close the app and go do the reps.</b> An hour on a real site beats another lesson.</div>`:''}
+  </div>`;
+}
+function closeSummary(){ session=null; renderStage(); renderPath(); renderRank(); }
+function quitSession(){ session=null; renderStage(); }
+
+function nextTierRank(){const o=['T1','T2','T3','T4'];for(const tk of o){if(!tierUnlocked(tk))return TIER_META[tk].rankToUnlock;}return S.level;}
+
+/* ---------- PATH ---------- */
+function renderPath(){
+  const el=document.getElementById('pathList'); if(!el)return;
+  const order=['T1','T2','T3','T4'];
+  // concept mastery meters (T1)
+  const concepts=[...new Set(ALL.filter(m=>m.concept).map(m=>m.concept))];
+  let meters=`<div class="mastery-wrap"><div class="mastery-h">CONCEPT MASTERY</div>`;
+  concepts.forEach(c=>{
+    const pct=S.mastery[c]||0;
+    meters+=`<div class="mastery-row"><div class="mr-nm">${c}</div><div class="mr-bar"><div style="width:${pct}%"></div></div><div class="mr-pct">${pct}%</div></div>`;
+  });
+  meters+=`</div>`;
+
+  const tiers=order.map(tk=>{
+    const T=TIER_META[tk]; const unlocked=tierUnlocked(tk);
+    const items=ALL.filter(m=>m.tier===tk);
+    const done=items.filter(m=>S.completed[m.id]).length;
+    const tot=tk==='T1'?items.length:'—';
+    const pct=tk==='T1'&&items.length?Math.round(done/items.length*100):0;
+    let st='locked',stx=`🔒 LVL ${T.rankToUnlock}`;
+    if(unlocked&&tk==='T1'&&pct===100){st='done';stx='✓ COMPLETE';}
+    else if(unlocked){st='active';stx='◈ ACTIVE';}
+    const nextId=nextMission(true)?.id;
+    let mini='';
+    if(tk==='T1'){
+      mini=items.map(m=>{
+        const dn=S.completed[m.id]; const cur=m.id===nextId; const avail=depsMet(m);
+        const cls=dn?'done':(cur?'cur':(avail?'':'locked'));
+        const mark=dn?'✓':(cur?'▸':(avail?'':'🔒'));
+        return `<div class="lesson-mini ${cls}"><div class="lm-dot">${mark}</div><div class="lm-nm">${m.title}${m.side?' <span style="color:var(--dimmer);font-size:9px">(optional)</span>':''}</div><div class="lm-xp">+${m.baseXP}</div></div>`;
+      }).join('');
+    } else {
+      mini=`<div class="tier-teaser">${TIER_META[tk].blurb}</div>`;
+    }
+    return `<div class="tier-block ${unlocked?'':'locked'}">
+      <div class="tier-hd"><div class="tier-ic">${T.icon}</div>
+      <div class="tier-info"><div class="tier-nm">${T.name}</div><div class="tier-st ${st}">${stx}</div></div>
+      ${!unlocked?'<div class="tier-lock">🔒</div>':''}</div>
+      ${tk==='T1'?`<div class="tier-prog"><div style="width:${pct}%;background:${st==='done'?'var(--green)':'var(--blue)'}"></div></div><div class="tier-progmeta"><span>${done}/${items.length} passed</span><span>${pct}%</span></div>`:`<div class="tier-blurb">${T.blurb}</div>`}
+      ${mini}
+    </div>`;
+  }).join('');
+  el.innerHTML=meters+tiers;
+}
+
+/* ---------- KEYS ---------- */
+function renderKeys(){
+  const el=document.getElementById('keysList'); if(!el)return;
+  el.innerHTML=KEYSTONES.map(k=>{
+    const done=k.weekly?S.keyWeekly[k.id]===weekKey():!!S.keyDone[k.id];
+    return `<div class="kitem ${done?'done':''}" onclick="toggleKey('${k.id}')">
+      <div class="kc"><div class="kbox"></div></div>
+      <div class="kbody"><div class="ktop"><span class="kemoji">${k.emoji}</span><span class="ktitle">${k.t}</span>${k.weekly?'<span class="kbadge">WEEKLY</span>':''}</div><div class="kdesc">${k.d}</div></div>
+    </div>`;
+  }).join('');
+  const done=KEYSTONES.filter(k=>k.weekly?S.keyWeekly[k.id]===weekKey():S.keyDone[k.id]).length;
+  document.getElementById('keysRing').textContent=done+'/'+KEYSTONES.length;
+  document.getElementById('keysRing').classList.toggle('full',done===KEYSTONES.length);
+  document.getElementById('keysStreakN').textContent=S.keyStreak;
+  const mm=document.getElementById('keysMult');
+  if(mm) mm.textContent = S.multiplier>1? `${S.multiplier}× XP active on the career track`:'Hit all 5 for 1.5× career XP';
+  const kd=document.getElementById('keysDone');
+  if(done===KEYSTONES.length){kd.classList.add('show');document.getElementById('keysDoneSub').innerHTML=`All keystones cleared — <b style="color:var(--green)">1.5× XP</b> flowing to your career track. ${S.keyStreak}-day foundation streak.`;}
+  else kd.classList.remove('show');
+}
+
+/* ---------- LOG ---------- */
+function renderLog(){
+  const g=id=>document.getElementById(id); if(!g('licHours'))return;
+  g('licHours').textContent=Math.round(S.licHours).toLocaleString();
+  const rem=Math.max(0,LICENSE_HOURS-S.licHours);
+  g('licCountdown').textContent=rem>0?rem.toLocaleString()+' hrs to go':'✓ REQUIREMENT MET';
+  g('licBar').style.width=Math.min(100,S.licHours/LICENSE_HOURS*100)+'%';
+  g('cHours').textContent=Math.round(S.licHours).toLocaleString();
+  g('sEarned').textContent='$'+S.earned.toLocaleString(); g('cEarned').textContent='$'+S.earned.toLocaleString();
+  g('sDeals').textContent=S.deals; g('cDeals').textContent=S.deals;
+  const t=S.lifts.bench+S.lifts.squat+S.lifts.dead;
+  g('prLine').innerHTML=`Bench ${S.lifts.bench} · Squat ${S.lifts.squat} · Dead ${S.lifts.dead} · Total <b>${t}</b>`;
+}
+
+/* ---------- UI ---------- */
+function showTab(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.t===t));document.querySelectorAll('section').forEach(x=>x.classList.toggle('on',x.id===t));window.scrollTo(0,0);}
+document.querySelectorAll('.tab').forEach(tab=>tab.addEventListener('click',()=>showTab(tab.dataset.t)));
+let toastTimer;
+function toast(msg,xp){const el=document.getElementById('toast');el.innerHTML=xp?`${msg} · <span class="xp">+${xp} XP</span>`:msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),1900);}
+function showLevelUp(lvl){document.getElementById('luNum').textContent=lvl;document.getElementById('luRank').textContent=rankFor(lvl);let u='';['T2','T3','T4'].forEach(tk=>{if(TIER_META[tk].rankToUnlock===lvl)u=`⋔ UNLOCKED: ${TIER_META[tk].name}`;});document.getElementById('luUnlock').textContent=u;document.getElementById('lvlup').classList.add('show');}
+function closeLvlup(){document.getElementById('lvlup').classList.remove('show');render();}
+function hardReset(){if(confirm('Wipe ALL progress? Cannot be undone.')){localStorage.removeItem(KEY);S=fresh();session=null;render();toast('Reset. Day 1.',0);}}
+
+/* ---------- BOOT ---------- */
+checkDay(); recomputeMasteryMeters(); render();
+setInterval(()=>{if(today()!==S.todayKey){checkDay();render();}},60000);
+
+</script>
+</body>
+</html>
